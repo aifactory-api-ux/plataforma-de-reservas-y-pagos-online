@@ -4,8 +4,8 @@ import type { Pago, Devolucion } from '../types/models';
 import type { DevolucionRequest } from '../types/api';
 
 interface UsePagosReturn {
-  pagos: Pago[];
-  isLoading: boolean;
+  data: Pago[];
+  loading: boolean;
   error: string | null;
   fetchPagos: () => Promise<void>;
   getPagoById: (pagoId: number) => Promise<Pago>;
@@ -14,23 +14,34 @@ interface UsePagosReturn {
   conciliarPago: (pagoId: number) => Promise<Pago>;
 }
 
+const fetchPagosData = async (): Promise<Pago[]> => {
+  return pagosService.getPagosPendientes();
+};
+
+const handlePagosError = (err: unknown): string => {
+  return err instanceof Error ? err.message : 'Error al obtener pagos';
+};
+
+const updatePagosList = (pagos: Pago[], pagoId: number): Pago[] => {
+  return pagos.filter(p => p.id !== pagoId);
+};
+
 export const usePagos = (): UsePagosReturn => {
-  const [pagos, setPagos] = useState<Pago[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<Pago[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchPagos = useCallback(async () => {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
 
     try {
-      const data = await pagosService.getPagosPendientes();
-      setPagos(data);
+      const result = await fetchPagosData();
+      setData(result);
     } catch (err) {
-      const errorMessage = err instanceof Error ? err.message : 'Error al obtener pagos';
-      setError(errorMessage);
+      setError(handlePagosError(err));
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }, []);
 
@@ -48,7 +59,7 @@ export const usePagos = (): UsePagosReturn => {
 
   const conciliarPago = useCallback(async (pagoId: number): Promise<Pago> => {
     const pago = await pagosService.ConciliarPago(pagoId);
-    setPagos(prev => prev.filter(p => p.id !== pagoId));
+    setData(prev => updatePagosList(prev, pagoId));
     return pago;
   }, []);
 
@@ -57,8 +68,8 @@ export const usePagos = (): UsePagosReturn => {
   }, [fetchPagos]);
 
   return {
-    pagos,
-    isLoading,
+    data,
+    loading,
     error,
     fetchPagos,
     getPagoById,

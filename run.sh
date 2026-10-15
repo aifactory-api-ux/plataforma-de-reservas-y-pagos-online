@@ -35,14 +35,49 @@ echo "Docker: $(docker --version)"
 echo "Docker Compose: $(${DOCKER_COMPOSE} version)"
 echo ""
 
+validate_sensitive_vars() {
+    local missing_vars=()
+    local placeholder_vars=()
+
+    if [ -f .env ]; then
+        set -a
+        source .env
+        set +a
+    fi
+
+    if [ -z "$DB_PASSWORD" ] || [ "$DB_PASSWORD" = "cambiar_en_produccion" ]; then
+        placeholder_vars+=("DB_PASSWORD")
+    fi
+
+    if [ -z "$JWT_SECRET" ] || [[ "$JWT_SECRET" == *"cambiar_en_produccion"* ]]; then
+        placeholder_vars+=("JWT_SECRET")
+    fi
+
+    if [ -z "$JWT_REFRESH_SECRET" ] || [[ "$JWT_REFRESH_SECRET" == *"cambiar_en_produccion"* ]]; then
+        placeholder_vars+=("JWT_REFRESH_SECRET")
+    fi
+
+    if [ ${#placeholder_vars[@]} -gt 0 ]; then
+        echo "ERROR: Las siguientes variables sensibles no han sido configuradas correctamente:"
+        echo ""
+        for var in "${placeholder_vars[@]}"; do
+            echo "  - $var"
+        done
+        echo ""
+        echo "Por favor edita el archivo .env y configura valores seguros."
+        echo "Cada variable debe tener un valor unico y no contener 'cambiar_en_produccion'."
+        exit 1
+    fi
+
+    echo "✓ Variables sensibles validadas"
+}
+
 # Crear archivo .env si no existe
 if [ ! -f .env ]; then
     echo "Creando archivo .env desde .env.example..."
     if [ -f .env.example ]; then
         cp .env.example .env
         echo "✓ Archivo .env creado"
-        echo ""
-        echo "ATENCION: Por favor edita el archivo .env y completa las credenciales"
         echo ""
     else
         echo "ERROR: No se encontro el archivo .env.example"
@@ -51,6 +86,8 @@ if [ ! -f .env ]; then
 else
     echo "✓ Archivo .env ya existe"
 fi
+
+validate_sensitive_vars
 echo ""
 
 # Funcion para verificar si un servicio esta healthy

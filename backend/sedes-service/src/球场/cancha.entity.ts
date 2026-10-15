@@ -9,9 +9,9 @@ import {
   JoinColumn,
 } from 'typeorm';
 import { Sede } from './sede.entity';
-import { Reserva } from './reserva.entity';
-import { BloqueoCancha } from './bloqueo-cancha.entity';
-import { Clase } from './clase.entity';
+import { Reserva } from '../sedes/entities/reserva.entity';
+import { BloqueoCancha } from '../sedes/entities/bloqueo-cancha.entity';
+import { Clase } from '../sedes/entities/clase.entity';
 
 export type CanchaDeporte = 'padel' | 'futbol7';
 export type CanchaEstado = 'disponible' | 'mantenimiento' | 'bloqueada';

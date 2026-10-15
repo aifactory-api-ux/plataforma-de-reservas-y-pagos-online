@@ -1,21 +1,19 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ChevronLeft, ChevronRight, RefreshCw, Bell } from 'lucide-react';
+import { ChevronLeft, ChevronRight, RefreshCw } from 'lucide-react';
 import { tokens } from '../styles/tokens';
 import { Header } from '../components/layout/Header';
 import { AgendaGrilla } from '../components/ui/AgendaGrilla';
 import { ModalConfirmacion } from '../components/ui/ModalConfirmacion';
-import { BadgeEstado } from '../components/ui/BadgeEstado';
+
 import { useAuth } from '../hooks/useAuth';
 import { useAgendaSede, useSedes } from '../hooks/useSedes';
-import { useNotifications } from '../context/NotificationContext';
 import { sedesService } from '../services/sedes.service';
 import type { UsuarioPersonal, Reserva } from '../types/models';
 
 const AgendaSede: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
-  const { sendReminder } = useNotifications();
   const { sedes, isLoading: sedesLoading } = useSedes();
   const [selectedSedeId, setSelectedSedeId] = useState<number | null>(null);
   const [selectedDate, setSelectedDate] = useState(new Date());
@@ -103,14 +101,6 @@ const AgendaSede: React.FC = () => {
       setAttendanceLoading(false);
     }
   }, [selectedReservation, refetch]);
-
-  const handleSendReminder = useCallback(async (reservaId: number) => {
-    try {
-      await sendReminder(reservaId);
-    } catch (err) {
-      console.error('Error al enviar recordatorio:', err);
-    }
-  }, [sendReminder]);
 
   const pageStyles: React.CSSProperties = {
     minHeight: '100vh',

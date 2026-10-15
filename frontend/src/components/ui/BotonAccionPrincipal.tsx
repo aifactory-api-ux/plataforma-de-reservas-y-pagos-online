@@ -8,14 +8,30 @@ export interface BotonAccionPrincipalProps {
   loading?: boolean;
   disabled?: boolean;
   fullWidth?: boolean;
-  leftIcon?: string;
-  rightIcon?: string;
+  leftIcon?: React.ReactNode;
+  rightIcon?: React.ReactNode;
   onClick?: () => void;
   type?: 'button' | 'submit' | 'reset';
 }
 
-const getVariantStyles = (variant: BotonAccionPrincipalProps['variant'] = 'primary') => {
-  const variants = {
+type VariantType = BotonAccionPrincipalProps['variant'];
+type SizeType = BotonAccionPrincipalProps['size'];
+
+interface VariantStyles {
+  backgroundColor: string;
+  color: string;
+  border: string;
+  hoverBackgroundColor: string;
+}
+
+interface SizeStyles {
+  padding: string;
+  fontSize: string;
+  minHeight: string;
+}
+
+const getVariantStyles = (variant: VariantType = 'primary'): VariantStyles => {
+  const variants: Record<Exclude<VariantType, undefined>, VariantStyles> = {
     primary: {
       backgroundColor: tokens.colors.brand.green_700,
       color: tokens.colors.neutral.white,
@@ -50,8 +66,8 @@ const getVariantStyles = (variant: BotonAccionPrincipalProps['variant'] = 'prima
   return variants[variant];
 };
 
-const getSizeStyles = (size: BotonAccionPrincipalProps['size'] = 'md') => {
-  const sizes = {
+const getSizeStyles = (size: SizeType = 'md'): SizeStyles => {
+  const sizes: Record<Exclude<SizeType, undefined>, SizeStyles> = {
     sm: {
       padding: `${tokens.spacing.space_2} ${tokens.spacing.space_3}`,
       fontSize: '14px',
@@ -71,22 +87,17 @@ const getSizeStyles = (size: BotonAccionPrincipalProps['size'] = 'md') => {
   return sizes[size];
 };
 
-export const BotonAccionPrincipal: React.FC<BotonAccionPrincipalProps> = ({
-  label,
-  variant = 'primary',
-  size = 'md',
-  loading = false,
-  disabled = false,
-  fullWidth = false,
-  leftIcon,
-  rightIcon,
-  onClick,
-  type = 'button',
-}) => {
+const getButtonStyles = (
+  variant: VariantType,
+  size: SizeType,
+  disabled: boolean,
+  loading: boolean,
+  fullWidth: boolean
+): React.CSSProperties => {
   const variantStyles = getVariantStyles(variant);
   const sizeStyles = getSizeStyles(size);
 
-  const buttonStyles: React.CSSProperties = {
+  return {
     display: 'inline-flex',
     alignItems: 'center',
     justifyContent: 'center',
@@ -104,14 +115,39 @@ export const BotonAccionPrincipal: React.FC<BotonAccionPrincipalProps> = ({
     ...sizeStyles,
     outline: 'none',
   };
+};
 
-  const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
-    e.currentTarget.style.boxShadow = tokens.shadows.focus_ring;
-  };
+const handleFocus = (e: React.FocusEvent<HTMLButtonElement>) => {
+  e.currentTarget.style.boxShadow = tokens.shadows.focus_ring;
+};
 
-  const handleBlur = (e: React.FocusEvent<HTMLButtonElement>) => {
-    e.currentTarget.style.boxShadow = 'none';
-  };
+const handleBlur = (e: React.FocusEvent<HTMLButtonElement>) => {
+  e.currentTarget.style.boxShadow = 'none';
+};
+
+const getSpinnerStyles = (): React.CSSProperties => ({
+  display: 'inline-block',
+  width: '16px',
+  height: '16px',
+  border: '2px solid currentColor',
+  borderTopColor: 'transparent',
+  borderRadius: '50%',
+  animation: 'spin 0.8s linear infinite',
+});
+
+export const BotonAccionPrincipal: React.FC<BotonAccionPrincipalProps> = ({
+  label,
+  variant = 'primary',
+  size = 'md',
+  loading = false,
+  disabled = false,
+  fullWidth = false,
+  leftIcon,
+  rightIcon,
+  onClick,
+  type = 'button',
+}) => {
+  const buttonStyles = getButtonStyles(variant, size, disabled, loading, fullWidth);
 
   return (
     <button
@@ -124,17 +160,7 @@ export const BotonAccionPrincipal: React.FC<BotonAccionPrincipalProps> = ({
       aria-busy={loading}
     >
       {loading ? (
-        <span
-          style={{
-            display: 'inline-block',
-            width: '16px',
-            height: '16px',
-            border: '2px solid currentColor',
-            borderTopColor: 'transparent',
-            borderRadius: '50%',
-            animation: 'spin 0.8s linear infinite',
-          }}
-        />
+        <span style={getSpinnerStyles()} />
       ) : (
         <>
           {leftIcon && <span>{leftIcon}</span>}

@@ -8,7 +8,7 @@ import { ReportExporter } from '../components/admin/ReportExporter';
 import { useAuth } from '../hooks/useAuth';
 import type { UsuarioPersonal } from '../types/models';
 
-const AdminTabs: React.FC = {
+const AdminTabs = {
   usuarios: UserManager,
   tarifas: TariffEditor,
   bloqueos: UserManager,
@@ -23,7 +23,7 @@ export const BloqueosManager: React.FC<{ onError?: (e: string) => void; onSucces
 
 const PanelAdmin: React.FC = () => {
   const navigate = useNavigate();
-  const [searchParams, setSearchParams] = useSearchParams();
+  const [searchParams] = useSearchParams();
   const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
   const [activeTab, setActiveTab] = useState<TabId>(
     (searchParams.get('tab') as TabId) || 'usuarios'
@@ -49,11 +49,6 @@ const PanelAdmin: React.FC = () => {
       return () => clearTimeout(timer);
     }
   }, [notification]);
-
-  const handleTabChange = useCallback((tab: TabId) => {
-    setActiveTab(tab);
-    setSearchParams({ tab });
-  }, [setSearchParams]);
 
   const handleError = useCallback((error: string) => {
     setNotification({ type: 'error', message: error });

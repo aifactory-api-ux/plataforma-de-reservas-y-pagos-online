@@ -5,7 +5,6 @@ import {
   DollarSign,
   Shield,
   BarChart3,
-  LayoutDashboard,
   LogOut,
 } from 'lucide-react';
 import { tokens } from '../../styles/tokens';

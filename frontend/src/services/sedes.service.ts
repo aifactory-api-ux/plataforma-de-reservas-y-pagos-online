@@ -1,6 +1,5 @@
 import { apiFetch } from './api';
 import type { Sede, Cancha, Tarifa, Reserva } from '../types/models';
-import type { CreateReservationRequest } from '../types/api';
 
 export interface AgendaRow {
   id: string;
@@ -33,34 +32,34 @@ export interface CreatePresencialRequest {
 
 class SedesService {
   async getSedes(): Promise<Sede[]> {
-    return apiFetch.get<Sede[]>('/api/sedes');
+    return apiFetch.get<Sede[]>('/sedes');
   }
 
   async getSede(sedeId: number): Promise<Sede> {
-    return apiFetch.get<Sede>(`/api/sedes/${sedeId}`);
+    return apiFetch.get<Sede>(`/sedes/${sedeId}`);
   }
 
   async getCanchas(sedeId: number): Promise<Cancha[]> {
-    return apiFetch.get<Cancha[]>(`/api/sedes/${sedeId}/canchas`);
+    return apiFetch.get<Cancha[]>(`/sedes/${sedeId}/canchas`);
   }
 
   async getTarifas(sedeId: number): Promise<Tarifa[]> {
-    return apiFetch.get<Tarifa[]>(`/api/sedes/${sedeId}/tarifas`);
+    return apiFetch.get<Tarifa[]>(`/sedes/${sedeId}/tarifas`);
   }
 
   async getAgendaSede(sedeId: number, fecha: string): Promise<AgendaSedeResponse> {
-    return apiFetch.get<AgendaSedeResponse>(`/api/sedes/${sedeId}/agenda?fecha=${fecha}`);
+    return apiFetch.get<AgendaSedeResponse>(`/sedes/${sedeId}/agenda?fecha=${fecha}`);
   }
 
   async createReservaPresencial(data: CreatePresencialRequest): Promise<Reserva> {
-    return apiFetch.post<Reserva>('/api/reservas/presencial', data);
+    return apiFetch.post<Reserva>('/reservas/presencial', data);
   }
 
   async updateReservaEstado(
     reservaId: number,
     estado: 'asistio' | 'no_asistio'
   ): Promise<Reserva> {
-    return apiFetch.patch<Reserva>(`/api/reservas/${reservaId}/asistencia`, { estado });
+    return apiFetch.patch<Reserva>(`/reservas/${reservaId}/asistencia`, { estado });
   }
 
   async bloquearCancha(
@@ -69,7 +68,7 @@ class SedesService {
     fin: string,
     motivo: string
   ): Promise<void> {
-    await apiFetch.post(`/api/sedes/${canchaId}/bloqueo`, {
+    await apiFetch.post(`/sedes/${canchaId}/bloqueo`, {
       inicio,
       fin,
       motivo,
@@ -77,7 +76,7 @@ class SedesService {
   }
 
   async desbloquearCancha(bloqueoId: number): Promise<void> {
-    await apiFetch.delete(`/api/sedes/bloqueo/${bloqueoId}`);
+    await apiFetch.delete(`/sedes/bloqueo/${bloqueoId}`);
   }
 }
 

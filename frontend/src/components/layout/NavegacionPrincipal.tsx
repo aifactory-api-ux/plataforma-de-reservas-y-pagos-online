@@ -66,126 +66,177 @@ const getNavItemsForRole = (role: NavegacionPrincipalProps['role']): NavItem[] =
   }
 };
 
+const isMobileView = (): boolean => {
+  return typeof window !== 'undefined' && window.innerWidth < 1024;
+};
+
+const getContainerStyles = (isMobile: boolean): React.CSSProperties => {
+  const baseStyles: React.CSSProperties = {
+    backgroundColor: tokens.colors.neutral.surface,
+  };
+
+  if (isMobile) {
+    return {
+      ...baseStyles,
+      position: 'fixed',
+      bottom: 0,
+      left: 0,
+      right: 0,
+      zIndex: 100,
+      borderTop: `1px solid ${tokens.colors.neutral.border}`,
+      paddingTop: tokens.spacing.space_2,
+      paddingBottom: tokens.spacing.space_2,
+      paddingLeft: tokens.spacing.space_2,
+      paddingRight: tokens.spacing.space_2,
+    };
+  }
+
+  return {
+    ...baseStyles,
+    width: '240px',
+    minHeight: '100vh',
+    borderRight: `1px solid ${tokens.colors.neutral.border}`,
+    padding: tokens.spacing.space_4,
+    display: 'flex',
+    flexDirection: 'column',
+  };
+};
+
+const getLogoStyles = (isMobile: boolean): React.CSSProperties => ({
+  fontSize: '22px',
+  fontWeight: 700,
+  fontFamily: tokens.typography.families.display,
+  color: tokens.colors.brand.green_700,
+  letterSpacing: '0.01em',
+  marginBottom: tokens.spacing.space_6,
+  padding: isMobile ? `0 ${tokens.spacing.space_2}` : 0,
+});
+
+const getNavListStyles = (isMobile: boolean): React.CSSProperties => ({
+  display: 'flex',
+  flexDirection: isMobile ? 'row' : 'column',
+  listStyle: 'none',
+  margin: 0,
+  padding: 0,
+  gap: isMobile ? 0 : tokens.spacing.space_1,
+  flex: 1,
+  justifyContent: isMobile ? 'space-around' : 'flex-start',
+});
+
+const getNavItemStyles = (isActive: boolean, isMobile: boolean): React.CSSProperties => ({
+  display: 'flex',
+  flexDirection: 'column',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: tokens.spacing.space_1,
+  padding: isMobile
+    ? `${tokens.spacing.space_2} ${tokens.spacing.space_3}`
+    : `${tokens.spacing.space_3} ${tokens.spacing.space_4}`,
+  borderRadius: tokens.radii.md,
+  backgroundColor: isActive
+    ? tokens.colors.brand.green_50
+    : 'transparent',
+  color: isActive
+    ? tokens.colors.brand.green_700
+    : tokens.colors.neutral.text_secondary,
+  cursor: 'pointer',
+  transition: 'all 150ms ease-out',
+  textDecoration: 'none',
+  minWidth: isMobile ? '64px' : 'auto',
+  minHeight: '48px',
+});
+
+const getActiveIndicatorStyles = (isMobile: boolean): React.CSSProperties => ({
+  position: 'absolute',
+  ...(isMobile
+    ? {
+        top: 0,
+        left: '50%',
+        transform: 'translateX(-50%)',
+        width: '32px',
+        height: '3px',
+        backgroundColor: tokens.colors.brand.green_700,
+        borderRadius: `0 0 ${tokens.radii.sm} ${tokens.radii.sm}`,
+      }
+    : {
+        left: 0,
+        top: '50%',
+        transform: 'translateY(-50%)',
+        width: '3px',
+        height: '24px',
+        backgroundColor: tokens.colors.brand.green_700,
+        borderRadius: `0 ${tokens.radii.sm} ${tokens.radii.sm} 0`,
+      }),
+});
+
+const getLabelStyles = (): React.CSSProperties => ({
+  fontSize: '11px',
+  fontWeight: 600,
+  fontFamily: tokens.typography.families.body,
+  letterSpacing: '0.04em',
+  textTransform: 'uppercase',
+});
+
+const handleItemMouseEnter = (e: React.MouseEvent<HTMLDivElement>, isActive: boolean) => {
+  if (!isActive) {
+    e.currentTarget.style.backgroundColor = tokens.colors.neutral.surface_subtle;
+  }
+};
+
+const handleItemMouseLeave = (e: React.MouseEvent<HTMLDivElement>, isActive: boolean) => {
+  if (!isActive) {
+    e.currentTarget.style.backgroundColor = 'transparent';
+  }
+};
+
+const handleItemKeyDown = (e: React.KeyboardEvent<HTMLDivElement>, onSelect: () => void) => {
+  if (e.key === 'Enter' || e.key === ' ') {
+    onSelect();
+  }
+};
+
+const getIconForItem = (iconName: string): React.ReactNode => {
+  return iconMap[iconName] || <Calendar size={24} strokeWidth={1.75} />;
+};
+
+const renderNavItem = (
+  item: NavItem,
+  isActive: boolean,
+  isMobile: boolean,
+  onSelect: (route: string) => void
+): React.ReactNode => {
+  const icon = getIconForItem(item.icon);
+
+  return (
+    <li key={item.route} style={{ position: 'relative' }}>
+      <div
+        style={getNavItemStyles(isActive, isMobile)}
+        onClick={() => onSelect(item.route)}
+        onMouseEnter={(e) => handleItemMouseEnter(e, isActive)}
+        onMouseLeave={(e) => handleItemMouseLeave(e, isActive)}
+        role="button"
+        tabIndex={0}
+        aria-current={isActive ? 'page' : undefined}
+        onKeyDown={(e) => handleItemKeyDown(e, () => onSelect(item.route))}
+      >
+        {isActive && <div style={getActiveIndicatorStyles(isMobile)} />}
+        <span style={{ flexShrink: 0 }}>{icon}</span>
+        <span style={getLabelStyles()}>{item.label}</span>
+      </div>
+    </li>
+  );
+};
+
 export const NavegacionPrincipal: React.FC<NavegacionPrincipalProps> = ({
   items,
   activeRoute,
   role,
   onSelect,
 }) => {
-  const isMobile = typeof window !== 'undefined' && window.innerWidth < 1024;
-
-  const containerStyles: React.CSSProperties = {
-    backgroundColor: tokens.colors.neutral.surface,
-    ...(isMobile
-      ? {
-          position: 'fixed',
-          bottom: 0,
-          left: 0,
-          right: 0,
-          zIndex: 100,
-          borderTop: `1px solid ${tokens.colors.neutral.border}`,
-          paddingTop: tokens.spacing.space_2,
-          paddingBottom: tokens.spacing.space_2,
-          paddingLeft: tokens.spacing.space_2,
-          paddingRight: tokens.spacing.space_2,
-        }
-      : {
-          width: '240px',
-          minHeight: '100vh',
-          borderRight: `1px solid ${tokens.colors.neutral.border}`,
-          padding: tokens.spacing.space_4,
-          display: 'flex',
-          flexDirection: 'column',
-        }),
-  };
-
-  const logoStyles: React.CSSProperties = {
-    fontSize: '22px',
-    fontWeight: 700,
-    fontFamily: tokens.typography.families.display,
-    color: tokens.colors.brand.green_700,
-    letterSpacing: '0.01em',
-    marginBottom: tokens.spacing.space_6,
-    padding: isMobile ? `0 ${tokens.spacing.space_2}` : 0,
-  };
-
-  const navListStyles: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: isMobile ? 'row' : 'column',
-    listStyle: 'none',
-    margin: 0,
-    padding: 0,
-    gap: isMobile ? 0 : tokens.spacing.space_1,
-    flex: 1,
-    justifyContent: isMobile ? 'space-around' : 'flex-start',
-  };
-
-  const getNavItemStyles = (isActive: boolean): React.CSSProperties => ({
-    display: 'flex',
-    flexDirection: 'column',
-    alignItems: 'center',
-    justifyContent: 'center',
-    gap: tokens.spacing.space_1,
-    padding: isMobile
-      ? `${tokens.spacing.space_2} ${tokens.spacing.space_3}`
-      : `${tokens.spacing.space_3} ${tokens.spacing.space_4}`,
-    borderRadius: tokens.radii.md,
-    backgroundColor: isActive
-      ? tokens.colors.brand.green_50
-      : 'transparent',
-    color: isActive
-      ? tokens.colors.brand.green_700
-      : tokens.colors.neutral.text_secondary,
-    cursor: 'pointer',
-    transition: 'all 150ms ease-out',
-    textDecoration: 'none',
-    minWidth: isMobile ? '64px' : 'auto',
-    minHeight: '48px',
-  });
-
-  const activeIndicatorStyles: React.CSSProperties = {
-    position: 'absolute',
-    ...(isMobile
-      ? {
-          top: 0,
-          left: '50%',
-          transform: 'translateX(-50%)',
-          width: '32px',
-          height: '3px',
-          backgroundColor: tokens.colors.brand.green_700,
-          borderRadius: `0 0 ${tokens.radii.sm} ${tokens.radii.sm}`,
-        }
-      : {
-          left: 0,
-          top: '50%',
-          transform: 'translateY(-50%)',
-          width: '3px',
-          height: '24px',
-          backgroundColor: tokens.colors.brand.green_700,
-          borderRadius: `0 ${tokens.radii.sm} ${tokens.radii.sm} 0`,
-        }),
-  };
-
-  const labelStyles: React.CSSProperties = {
-    fontSize: '11px',
-    fontWeight: 600,
-    fontFamily: tokens.typography.families.body,
-    letterSpacing: '0.04em',
-    textTransform: 'uppercase',
-  };
-
-  const handleMouseEnter = (e: React.MouseEvent<HTMLDivElement>, isActive: boolean) => {
-    if (!isActive) {
-      e.currentTarget.style.backgroundColor = tokens.colors.neutral.surface_subtle;
-    }
-  };
-
-  const handleMouseLeave = (e: React.MouseEvent<HTMLDivElement>, isActive: boolean) => {
-    if (!isActive) {
-      e.currentTarget.style.backgroundColor = 'transparent';
-    }
-  };
-
+  const isMobile = isMobileView();
+  const containerStyles = getContainerStyles(isMobile);
+  const logoStyles = getLogoStyles(isMobile);
+  const navListStyles = getNavListStyles(isMobile);
   const navItems = items.length > 0 ? items : getNavItemsForRole(role);
 
   return (
@@ -195,30 +246,7 @@ export const NavegacionPrincipal: React.FC<NavegacionPrincipalProps> = ({
       <ul style={navListStyles} role="list">
         {navItems.map((item) => {
           const isActive = activeRoute === item.route;
-          const icon = iconMap[item.icon] || <Calendar size={24} strokeWidth={1.75} />;
-
-          return (
-            <li key={item.route} style={{ position: 'relative' }}>
-              <div
-                style={getNavItemStyles(isActive)}
-                onClick={() => onSelect(item.route)}
-                onMouseEnter={(e) => handleMouseEnter(e, isActive)}
-                onMouseLeave={(e) => handleMouseLeave(e, isActive)}
-                role="button"
-                tabIndex={0}
-                aria-current={isActive ? 'page' : undefined}
-                onKeyDown={(e) => {
-                  if (e.key === 'Enter' || e.key === ' ') {
-                    onSelect(item.route);
-                  }
-                }}
-              >
-                {isActive && <div style={activeIndicatorStyles} />}
-                <span style={{ flexShrink: 0 }}>{icon}</span>
-                <span style={labelStyles}>{item.label}</span>
-              </div>
-            </li>
-          );
+          return renderNavItem(item, isActive, isMobile, onSelect);
         })}
       </ul>
     </nav>

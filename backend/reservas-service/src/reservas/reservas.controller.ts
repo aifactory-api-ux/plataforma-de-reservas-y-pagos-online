@@ -15,6 +15,7 @@ import {
 import { AuthGuard } from '@nestjs/passport';
 import { ReservasService } from './reservas.service';
 import { CreateReservaDto } from './dto/create-reserva.dto';
+import { CreateReservaPresencialDto } from './dto/create-reserva-presencial.dto';
 import { UpdateReservaDto } from './dto/update-reserva.dto';
 import { GetDisponibilidadDto } from './dto/get-disponibilidad.dto';
 
@@ -29,6 +30,13 @@ export class ReservasController {
     return this.reservasService.createReserva(createReservaDto);
   }
 
+  @Post('presencial')
+  @UseGuards(AuthGuard('jwt'))
+  @HttpCode(HttpStatus.CREATED)
+  async createReservaPresencial(@Body() createReservaPresencialDto: CreateReservaPresencialDto) {
+    return this.reservasService.createReservaPresencial(createReservaPresencialDto);
+  }
+
   @Get()
   @UseGuards(AuthGuard('jwt'))
   async findAllReservas() {
@@ -38,6 +46,14 @@ export class ReservasController {
   @Get('disponibilidad')
   async getDisponibilidad(@Query() getDisponibilidadDto: GetDisponibilidadDto) {
     return this.reservasService.getDisponibilidad(getDisponibilidadDto);
+  }
+
+  @Post('check-disponibilidad')
+  @HttpCode(HttpStatus.OK)
+  async checkSlotDisponibilidad(@Body() checkSlotDto: { canchaId: number; inicio: string; fin: string }) {
+    const inicioDate = new Date(checkSlotDto.inicio);
+    const finDate = new Date(checkSlotDto.fin);
+    return this.reservasService.checkSlotDisponibilidad(checkSlotDto.canchaId, inicioDate, finDate);
   }
 
   @Get('jugador/:jugadorId')

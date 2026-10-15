@@ -12,6 +12,7 @@ import { Jugador } from './entities/jugador.entity';
 import { Cancha } from './entities/cancha.entity';
 import { Tarifa } from './entities/tarifa.entity';
 import { CreateReservaDto } from './dto/create-reserva.dto';
+import { CreateReservaPresencialDto } from './dto/create-reserva-presencial.dto';
 import { UpdateReservaDto } from './dto/update-reserva.dto';
 import { GetDisponibilidadDto } from './dto/get-disponibilidad.dto';
 import { isTimeOverlapping, addMinutes, getStartOfDay, getEndOfDay, getFranjaHoraria } from '../../../shared/utils/date.utils';
@@ -345,6 +346,11 @@ export class ReservasService {
     return !!bloqueosConflicto;
   }
 
+  async checkSlotDisponibilidad(canchaId: number, inicio: Date, fin: Date): Promise<{ disponible: boolean }> {
+    const conflicto = await this.checkConflictoCancha(canchaId, inicio, fin);
+    return { disponible: !conflicto };
+  }
+
   async liberarReservaExpirada(reservaId: number): Promise<void> {
     const reserva = await this.reservaRepository.findOne({
       where: { id: reservaId },
@@ -393,5 +399,109 @@ export class ReservasService {
     }
 
     return this.reservaRepository.save(reserva);
+  }
+
+  async createReservaPresencial(createReservaPresencialDto: CreateReservaPresencialDto): Promise<Reserva> {
+    const {
+      jugadorNombre,
+      jugadorTelefono,
+      jugadorEmail,
+      canchaId,
+      tarifaId,
+      inicio,
+      fin,
+      esPagoManual,
+    } = createReservaPresencialDto;
+
+    let jugador = await this.jugadorRepository.findOne({
+      where: { telefono: jugadorTelefono },
+    });
+
+    if (!jugador) {
+      jugador = this.jugadorRepository.create({
+        nombre: jugadorNombre,
+        telefono: jugadorTelefono,
+        email: jugadorEmail || `${jugadorTelefono}@presencial.local`,
+        bloqueado: false,
+        inasistencias60Dias: 0,
+      });
+      jugador = await this.jugadorRepository.save(jugador);
+    }
+
+    if (jugador.bloqueado) {
+      throw new BadRequestException('El jugador se encuentra bloqueado y no puede realizar reservas');
+    }
+
+    const cancha = await this.canchaRepository.findOne({ where: { id: canchaId } });
+    if (!cancha) {
+      throw new NotFoundException('Cancha no encontrada');
+    }
+
+    if (cancha.estado !== 'disponible') {
+      throw new BadRequestException('La cancha no se encuentra disponible');
+    }
+
+    const tarifa = await this.tarifaRepository.findOne({ where: { id: tarifaId } });
+    if (!tarifa) {
+      throw new NotFoundException('Tarifa no encontrada');
+    }
+
+    const inicioDate = new Date(inicio);
+    const finDate = new Date(fin);
+
+    const conflicto = await this.checkConflictoCancha(canchaId, inicioDate, finDate);
+    if (conflicto) {
+      throw new ConflictException('La cancha ya está reservada para el horario seleccionado');
+    }
+
+    const queryRunner = this.dataSource.createQueryRunner();
+    await queryRunner.connect();
+    await queryRunner.startTransaction();
+
+    try {
+      let estadoReserva: ReservationStatus;
+      let confirmadaEn: Date | null = null;
+
+      if (esPagoManual) {
+        estadoReserva = 'pagada';
+        confirmadaEn = new Date();
+      } else {
+        estadoReserva = 'pagada';
+        confirmadaEn = new Date();
+      }
+
+      const reserva = queryRunner.manager.create(Reserva, {
+        jugadorId: jugador.id,
+        canchaId,
+        tarifaId,
+        inicio: inicioDate,
+        fin: finDate,
+        estado: estadoReserva,
+        confirmadaEn,
+      });
+
+      const reservaGuardada = await queryRunner.manager.save(reserva);
+
+      const bloqueoCancha = queryRunner.manager.create(BloqueoCancha, {
+        canchaId,
+        reservaId: reservaGuardada.id,
+        inicio: inicioDate,
+        fin: finDate,
+        estado: 'activo',
+      });
+      await queryRunner.manager.save(bloqueoCancha);
+
+      await queryRunner.commitTransaction();
+
+      return this.reservaRepository.findOne({
+        where: { id: reservaGuardada.id },
+        relations: ['jugador', 'cancha', 'tarifa'],
+      }) as Promise<Reserva>;
+    } catch (error) {
+      await queryRunner.rollbackTransaction();
+      throw error;
+    } finally {
+      await queryRunner.release();
+    }
   }
 }

@@ -3,46 +3,52 @@ import { sedesService, AgendaSedeResponse } from '../services/sedes.service';
 import type { Sede, Cancha, Tarifa } from '../types/models';
 
 interface UseSedesReturn {
-  sedes: Sede[];
-  isLoading: boolean;
+  data: Sede[];
+  loading: boolean;
   error: string | null;
   fetchSedes: () => Promise<void>;
+  sedes: Sede[];
+  isLoading: boolean;
 }
 
 interface UseSedeDetailReturn {
-  sede: Sede | null;
+  data: { sede: Sede; canchas: Cancha[]; tarifas: Tarifa[] } | undefined;
+  loading: boolean;
+  error: string | null;
+  fetchSedeDetail: (sedeId: number) => Promise<void>;
+  sede: Sede | undefined;
   canchas: Cancha[];
   tarifas: Tarifa[];
   isLoading: boolean;
-  error: string | null;
-  fetchSedeDetail: (sedeId: number) => Promise<void>;
 }
 
 interface UseAgendaSedeReturn {
-  agenda: AgendaSedeResponse | null;
-  isLoading: boolean;
+  data: AgendaSedeResponse | null;
+  loading: boolean;
   error: string | null;
   fetchAgenda: (sedeId: number, fecha: Date) => Promise<void>;
   refetch: () => void;
+  agenda: AgendaSedeResponse | null;
+  isLoading: boolean;
 }
 
 export const useSedes = (): UseSedesReturn => {
-  const [sedes, setSedes] = useState<Sede[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<Sede[]>([]);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSedes = useCallback(async () => {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
 
     try {
-      const data = await sedesService.getSedes();
-      setSedes(data);
+      const result = await sedesService.getSedes();
+      setData(result);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al obtener sedes';
       setError(errorMessage);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }, []);
 
@@ -50,18 +56,16 @@ export const useSedes = (): UseSedesReturn => {
     fetchSedes();
   }, [fetchSedes]);
 
-  return { sedes, isLoading, error, fetchSedes };
+  return { data, loading, error, fetchSedes, sedes: data, isLoading: loading };
 };
 
 export const useSedeDetail = (sedeId?: number): UseSedeDetailReturn => {
-  const [sede, setSede] = useState<Sede | null>(null);
-  const [canchas, setCanchas] = useState<Cancha[]>([]);
-  const [tarifas, setTarifas] = useState<Tarifa[]>([]);
-  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<{ sede: Sede; canchas: Cancha[]; tarifas: Tarifa[] } | undefined>(undefined);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const fetchSedeDetail = useCallback(async (id: number) => {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
 
     try {
@@ -70,14 +74,12 @@ export const useSedeDetail = (sedeId?: number): UseSedeDetailReturn => {
         sedesService.getCanchas(id),
         sedesService.getTarifas(id),
       ]);
-      setSede(sedeData);
-      setCanchas(canchasData);
-      setTarifas(tarifasData);
+      setData({ sede: sedeData, canchas: canchasData, tarifas: tarifasData });
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al obtener detalle de sede';
       setError(errorMessage);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }, []);
 
@@ -87,31 +89,31 @@ export const useSedeDetail = (sedeId?: number): UseSedeDetailReturn => {
     }
   }, [sedeId, fetchSedeDetail]);
 
-  return { sede, canchas, tarifas, isLoading, error, fetchSedeDetail };
+  return { data, loading, error, fetchSedeDetail, sede: data?.sede, canchas: data?.canchas ?? [], tarifas: data?.tarifas ?? [], isLoading: loading };
 };
 
 export const useAgendaSede = (sedeId?: number, fecha?: Date): UseAgendaSedeReturn => {
-  const [agenda, setAgenda] = useState<AgendaSedeResponse | null>(null);
-  const [isLoading, setIsLoading] = useState(false);
+  const [data, setData] = useState<AgendaSedeResponse | null>(null);
+  const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [currentSedeId, setCurrentSedeId] = useState<number | undefined>(sedeId);
   const [currentFecha, setCurrentFecha] = useState<Date | undefined>(fecha);
 
   const fetchAgenda = useCallback(async (id: number, date: Date) => {
-    setIsLoading(true);
+    setLoading(true);
     setError(null);
     setCurrentSedeId(id);
     setCurrentFecha(date);
 
     try {
       const fechaStr = date.toISOString().split('T')[0];
-      const data = await sedesService.getAgendaSede(id, fechaStr);
-      setAgenda(data);
+      const result = await sedesService.getAgendaSede(id, fechaStr);
+      setData(result);
     } catch (err) {
       const errorMessage = err instanceof Error ? err.message : 'Error al obtener agenda';
       setError(errorMessage);
     } finally {
-      setIsLoading(false);
+      setLoading(false);
     }
   }, []);
 
@@ -127,5 +129,5 @@ export const useAgendaSede = (sedeId?: number, fecha?: Date): UseAgendaSedeRetur
     }
   }, [sedeId, fecha, fetchAgenda]);
 
-  return { agenda, isLoading, error, fetchAgenda, refetch };
+  return { data, loading, error, fetchAgenda, refetch, agenda: data, isLoading: loading };
 };

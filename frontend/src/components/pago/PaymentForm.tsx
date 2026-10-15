@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { CreditCard, Lock, AlertCircle } from 'lucide-react';
 import { tokens } from '../../styles/tokens';
 import { BotonAccionPrincipal } from '../ui/BotonAccionPrincipal';
+import { apiFetch } from '../../lib/api';
 
 interface PaymentFormProps {
   montoTotal: number;
@@ -10,6 +11,28 @@ interface PaymentFormProps {
   isLoading?: boolean;
   splitCount?: number;
 }
+
+const formatCardNumber = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  const groups = digits.match(/.{1,4}/g) || [];
+  return groups.join(' ').substring(0, 19);
+};
+
+const formatExpiryDate = (value: string): string => {
+  const digits = value.replace(/\D/g, '');
+  if (digits.length >= 2) {
+    return `${digits.substring(0, 2)}/${digits.substring(2, 4)}`;
+  }
+  return digits;
+};
+
+const formatCvv = (value: string): string => {
+  return value.replace(/\D/g, '').substring(0, 4);
+};
+
+const getCardDigits = (cardNumber: string): string => {
+  return cardNumber.replace(/\D/g, '');
+};
 
 const PaymentForm: React.FC<PaymentFormProps> = ({
   montoTotal,
@@ -23,22 +46,8 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
   const [cvv, setCvv] = useState('');
   const [cardError, setCardError] = useState<string | null>(null);
 
-  const formatCardNumber = (value: string): string => {
-    const digits = value.replace(/\D/g, '');
-    const groups = digits.match(/.{1,4}/g) || [];
-    return groups.join(' ').substring(0, 19);
-  };
-
-  const formatExpiryDate = (value: string): string => {
-    const digits = value.replace(/\D/g, '');
-    if (digits.length >= 2) {
-      return `${digits.substring(0, 2)}/${digits.substring(2, 4)}`;
-    }
-    return digits;
-  };
-
   const validateCard = (): boolean => {
-    const digits = cardNumber.replace(/\D/g, '');
+    const digits = getCardDigits(cardNumber);
     if (digits.length < 16) {
       setCardError('El número de tarjeta debe tener 16 dígitos');
       return false;
@@ -60,24 +69,14 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
     if (!validateCard()) return;
 
     try {
-      const response = await fetch('/api/pagos/webpay/init', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({
-          monto: montoTotal,
-          splitCount,
-          cardNumber: cardNumber.replace(/\D/g, ''),
-        }),
+      const response = await apiFetch.post<{ token: string }>('/api/pagos/webpay/init', {
+        monto: montoTotal,
+        splitCount,
+        cardNumber: getCardDigits(cardNumber),
       });
-
-      if (!response.ok) {
-        throw new Error('Error al procesar el pago');
-      }
-
-      const data = await response.json();
-      onPaymentSuccess(data.token);
-    } catch (error) {
-      onPaymentError(error instanceof Error ? error.message : 'Error al procesar el pago');
+      onPaymentSuccess(response.token);
+    } catch {
+      onPaymentError('Error al procesar el pago');
     }
   };
 
@@ -275,7 +274,7 @@ const PaymentForm: React.FC<PaymentFormProps> = ({
               <input
                 type="text"
                 value={cvv}
-                onChange={(e) => setCvv(e.target.value.replace(/\D/g, '').substring(0, 4))}
+                onChange={(e) => setCvv(formatCvv(e.target.value))}
                 placeholder="123"
                 maxLength={4}
                 style={inputStyles}

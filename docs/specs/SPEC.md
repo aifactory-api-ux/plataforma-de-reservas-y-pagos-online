@@ -1,4 +1,3 @@
-```markdown
 # SPEC.md — Sporty: Plataforma de Reservas Deportivas
 
 ## 1. TECHNOLOGY STACK
@@ -321,10 +320,12 @@ export interface Filters {
 | Method | Path | Request Body | Response | Description |
 |--------|------|--------------|----------|-------------|
 | POST | /auth/google | `{ idToken: string }` | `{ accessToken: string, refreshToken: string, usuario: Jugador }` | Google OAuth login/register |
+| POST | /auth/login | `{ email, password }` | `{ accessToken: string, refreshToken: string, usuario: UsuarioPersonal }` | Staff login |
 | POST | /auth/refresh | `{ refreshToken: string }` | `{ accessToken: string, refreshToken: string }` | Refresh JWT tokens |
 | POST | /auth/logout | `{ refreshToken: string }` | `{ success: boolean }` | Invalidate refresh token |
 | POST | /auth/password-reset | `{ email: string }` | `{ message: string }` | Send password reset email |
 | POST | /auth/consent | `{ version: string, aceptado: boolean }` | `{ success: boolean }` | Record data consent acceptance |
+| GET | /auth/me | - | `{ usuario: Jugador | UsuarioPersonal, role: string }` | Get current user info |
 
 ### Reservas Service (Port 23002)
 
@@ -409,10 +410,14 @@ interface AgendaRow {
 | GET | /admin/tarifas | Query: `{ deporte? }` | `Tarifa[]` | List tariffs |
 | POST | /admin/tarifas | `{ deporte, duracionMinutos, franja, monto }` | `Tarifa` | Create tariff |
 | PUT | /admin/tarifas/:id | `{ monto? }` | `Tarifa` | Update tariff |
+| GET | /admin/bloqueo-jugador | Query: `{ jugadorId?, activo? }` | `BloqueoJugador[]` | List player blocks |
+| GET | /admin/bloqueo-jugador/:id | - | `BloqueoJugador` | Get block by ID |
 | POST | /admin/bloqueo-jugador | `{ jugadorId, motivo, inicio, fin }` | `BloqueoJugador` | Block player |
 | DELETE | /admin/bloqueo-jugador/:id | - | `{ success: boolean }` | Remove player block |
+| GET | /admin/jugadores/bloqueados | - | `Jugador[]` | List blocked players |
 | GET | /admin/reportes/reservas | Query: `{ sedeId?, desde, hasta, formato }` | `Blob | ReportData` | Export reservations Excel/CSV |
 | GET | /admin/reportes/pagos | Query: `{ sedeId?, desde, hasta, formato }` | `Blob | ReportData` | Export payments Excel/CSV |
+| GET | /admin/reportes/estadisticas | Query: `{ sedeId?, fechaInicio?, fechaFin? }` | `EstadisticasResumen` | Get statistics summary |
 
 ### Internal/Service-to-Service Events (Pub/Sub)
 
@@ -1295,4 +1300,3 @@ export const tokens = {
 | Disaster recovery time | < 4 hours |
 | Infrastructure cost | < 120 USD/month |
 | Compliance | Ley 19.628 (data protection) |
-```

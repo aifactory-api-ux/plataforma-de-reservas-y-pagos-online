@@ -32,7 +32,7 @@ export class AuthService {
   ) {}
 
   async googleLogin(googleLoginDto: GoogleLoginDto, googleUser: any) {
-    let jugador: Jugador;
+    let jugador: Jugador | null = null;
 
     if (googleUser.id) {
       jugador = await this.jugadorRepository.findOne({

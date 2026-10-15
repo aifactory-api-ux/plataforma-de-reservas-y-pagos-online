@@ -1,13 +1,13 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { ArrowLeft, Search, Calendar, Clock, User, Phone, Mail } from 'lucide-react';
+import { ArrowLeft } from 'lucide-react';
 import { tokens } from '../styles/tokens';
 import { Header } from '../components/layout/Header';
 import { ModalConfirmacion } from '../components/ui/ModalConfirmacion';
 import { useAuth } from '../hooks/useAuth';
 import { useSedeDetail } from '../hooks/useSedes';
 import { sedesService } from '../services/sedes.service';
-import type { UsuarioPersonal, Cancha, Tarifa } from '../types/models';
+import type { UsuarioPersonal, Tarifa } from '../types/models';
 
 interface FormData {
   jugadorNombre: string;
@@ -45,7 +45,6 @@ const ReservaPresencial: React.FC = () => {
     esPagoManual: false,
   });
 
-  const [filteredCanchas, setFilteredCanchas] = useState<Cancha[]>([]);
   const [filteredTarifas, setFilteredTarifas] = useState<Tarifa[]>([]);
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [showSuccessModal, setShowSuccessModal] = useState(false);
@@ -107,18 +106,6 @@ const ReservaPresencial: React.FC = () => {
     },
     []
   );
-
-  const calculateFin = useCallback((): string => {
-    const selectedTarifa = tarifas.find((t) => t.id === formData.tarifaId);
-    if (!selectedTarifa) return formData.horaInicio;
-
-    const [hours, minutes] = formData.horaInicio.split(':').map(Number);
-    const startDate = new Date();
-    startDate.setHours(hours, minutes, 0, 0);
-    startDate.setMinutes(startDate.getMinutes() + selectedTarifa.duracionMinutos);
-
-    return `${startDate.getHours().toString().padStart(2, '0')}:${startDate.getMinutes().toString().padStart(2, '0')}`;
-  }, [formData.horaInicio, formData.tarifaId, tarifas]);
 
   const handleSubmit = useCallback(
     async (e: React.FormEvent) => {

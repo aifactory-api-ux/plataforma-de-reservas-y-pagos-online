@@ -1,0 +1,143 @@
+:root {
+  /* Brand Colors - Green Palette */
+  --color-brand-green-950: #06281A;
+  --color-brand-green-900: #0B3B22;
+  --color-brand-green-800: #0F4C2C;
+  --color-brand-green-700: #0F6B3C;
+  --color-brand-green-600: #14804A;
+  --color-brand-green-500: #1C9A58;
+  --color-brand-green-300: #7DD3A4;
+  --color-brand-green-100: #D9F4E3;
+  --color-brand-green-50: #EDF9F1;
+
+  /* Neutral Colors */
+  --color-neutral-white: #FFFFFF;
+  --color-neutral-surface: #FFFFFF;
+  --color-neutral-background: #F4F8F5;
+  --color-neutral-surface-subtle: #F7FAF8;
+  --color-neutral-border: #DCE7E0;
+  --color-neutral-border-strong: #C3D3CA;
+  --color-neutral-text-primary: #10241A;
+  --color-neutral-text-secondary: #40564A;
+  --color-neutral-text-muted: #647A6F;
+  --color-neutral-overlay: rgba(6, 40, 26, 0.45);
+
+  /* Semantic Colors */
+  --color-semantic-success: #1C9A58;
+  --color-semantic-warning: #F2A900;
+  --color-semantic-danger: #C62828;
+  --color-semantic-info: #1565C0;
+  --color-semantic-focus: #1C9A58;
+
+  /* Reservation Status Colors */
+  --color-status-retenida-fill: #FFF4D6;
+  --color-status-retenida-border: #F2A900;
+  --color-status-retenida-text: #8A5A00;
+
+  --color-status-pagada-fill: #D9F4E3;
+  --color-status-pagada-border: #1C9A58;
+  --color-status-pagada-text: #0B3B22;
+
+  --color-status-cancelada-fill: #FDE7E7;
+  --color-status-cancelada-border: #C62828;
+  --color-status-cancelada-text: #7A1F1F;
+
+  --color-status-asistio-fill: #DCEFE2;
+  --color-status-asistio-border: #2E7D4F;
+  --color-status-asistio-text: #0B3B22;
+
+  --color-status-no-asistio-fill: #ECEFF1;
+  --color-status-no-asistio-border: #5A6460;
+  --color-status-no-asistio-text: #303A35;
+
+  /* Typography - Font Families */
+  --font-family-display: 'Barlow Condensed', 'Oswald', sans-serif;
+  --font-family-body: 'Inter', 'Roboto', system-ui, sans-serif;
+  --font-family-numeric: 'Inter', 'Roboto Mono', monospace;
+
+  /* Typography - Font Sizes */
+  --font-size-display: 40px;
+  --font-size-h1: 28px;
+  --font-size-h2: 22px;
+  --font-size-h3: 18px;
+  --font-size-body-large: 16px;
+  --font-size-body: 14px;
+  --font-size-body-small: 12px;
+  --font-size-label: 12px;
+  --font-size-button: 16px;
+  --font-size-numeric-agenda: 12px;
+
+  /* Typography - Line Heights */
+  --font-line-height-display: 44px;
+  --font-line-height-h1: 32px;
+  --font-line-height-h2: 28px;
+  --font-line-height-h3: 24px;
+  --font-line-height-body-large: 24px;
+  --font-line-height-body: 20px;
+  --font-line-height-body-small: 16px;
+  --font-line-height-label: 14px;
+  --font-line-height-button: 20px;
+  --font-line-height-numeric-agenda: 16px;
+
+  /* Typography - Font Weights */
+  --font-weight-regular: 400;
+  --font-weight-medium: 500;
+  --font-weight-semibold: 600;
+  --font-weight-bold: 700;
+
+  /* Typography - Letter Spacing */
+  --font-letter-spacing-display: 0.01em;
+  --font-letter-spacing-h1: 0.01em;
+  --font-letter-spacing-h2: 0.01em;
+  --font-letter-spacing-h3: 0;
+  --font-letter-spacing-body-large: 0;
+  --font-letter-spacing-body: 0;
+  --font-letter-spacing-body-small: 0;
+  --font-letter-spacing-label: 0.06em;
+  --font-letter-spacing-button: 0;
+  --font-letter-spacing-numeric-agenda: 0;
+
+  /* Border Radii */
+  --radius-sm: 8px;
+  --radius-md: 12px;
+  --radius-lg: 16px;
+  --radius-xl: 24px;
+  --radius-pill: 999px;
+
+  /* Shadows */
+  --shadow-card: 0 1px 2px rgba(16, 36, 26, 0.06), 0 8px 24px rgba(16, 36, 26, 0.08);
+  --shadow-modal: 0 12px 32px rgba(16, 36, 26, 0.22);
+  --shadow-card-hover: 0 4px 8px rgba(16, 36, 26, 0.08), 0 16px 32px rgba(16, 36, 26, 0.12);
+  --shadow-focus-ring: 0 0 0 3px rgba(28, 154, 88, 0.28);
+  --shadow-sticky-header: 0 2px 8px rgba(16, 36, 26, 0.08);
+
+  /* Spacing */
+  --space-1: 4px;
+  --space-2: 8px;
+  --space-3: 12px;
+  --space-4: 16px;
+  --space-5: 20px;
+  --space-6: 24px;
+  --space-8: 32px;
+  --space-10: 40px;
+  --space-12: 48px;
+  --space-16: 64px;
+
+  /* Layout */
+  --page-gutter-mobile: 16px;
+  --page-gutter-desktop: 32px;
+
+  /* Motion */
+  --motion-page-transition: 250ms ease-out;
+  --motion-micro-interaction: 150ms ease-out;
+  --motion-loading-pulse: opacity 1.0 to 0.55;
+  --motion-agenda-update: 300ms;
+
+  /* Touch Targets */
+  --touch-target-min: 48px;
+
+  /* Focus Ring */
+  --focus-ring-width: 3px;
+  --focus-ring-color: rgba(28, 154, 88, 0.28);
+  --focus-ring-offset: 2px;
+}

@@ -1,23 +1,37 @@
 import React, { useState, useEffect, useCallback } from 'react';
 import { useNavigate } from 'react-router-dom';
-import { Plus, Users, Clock, Calendar, ChevronRight, Edit2, Trash2 } from 'lucide-react';
 import { tokens } from '../styles/tokens';
 import { Header } from '../components/layout/Header';
 import { ModalConfirmacion } from '../components/ui/ModalConfirmacion';
-import { BadgeEstado } from '../components/ui/BadgeEstado';
+import { ListaClases } from '../components/clases/ListaClases/ListaClases';
 import { useAuth } from '../hooks/useAuth';
 import { useMisClases } from '../hooks/useClases';
+import { clasesService } from '../services/clases.service';
 import type { UsuarioPersonal, Clase } from '../types/models';
+
+const getTabTitle = (tab: 'disponibles' | 'completas'): string => {
+  return tab === 'disponibles' ? 'Próximas' : 'Pasadas';
+};
+
+const getEmptyTitle = (tab: 'disponibles' | 'completas'): string => {
+  return tab === 'disponibles'
+    ? 'No tienes clases programadas'
+    : 'No hay clases pasadas';
+};
+
+const getEmptyDescription = (tab: 'disponibles' | 'completas'): string => {
+  return tab === 'disponibles'
+    ? 'Las clases que crees aparecerán aquí'
+    : 'Las clases completadas aparecerán aquí';
+};
 
 const MisClases: React.FC = () => {
   const navigate = useNavigate();
   const { user, logout, isAuthenticated, isLoading: authLoading } = useAuth();
   const personalUser = user as UsuarioPersonal;
   const {
-    clases,
-    clasesCompletas,
-    clasesDisponibles,
-    isLoading,
+    data: clasesData,
+    loading: isLoading,
     error,
     fetchClases,
   } = useMisClases(personalUser?.id);
@@ -33,6 +47,14 @@ const MisClases: React.FC = () => {
     }
   }, [authLoading, isAuthenticated, navigate]);
 
+  const handleSelectClase = useCallback((clase: Clase) => {
+    navigate(`/clases/${clase.id}`);
+  }, [navigate]);
+
+  const handleEditClase = useCallback((clase: Clase) => {
+    navigate(`/clases/${clase.id}/editar`);
+  }, [navigate]);
+
   const handleCancelClase = useCallback((clase: Clase) => {
     setSelectedClase(clase);
     setShowCancelModal(true);
@@ -43,13 +65,7 @@ const MisClases: React.FC = () => {
 
     setCancelLoading(true);
     try {
-      await fetch(`${import.meta.env.VITE_API_URL || ''}/api/clases/${selectedClase.id}`, {
-        method: 'DELETE',
-        headers: {
-          'Content-Type': 'application/json',
-          Authorization: `Bearer ${localStorage.getItem('accessToken')}`,
-        },
-      });
+      await clasesService.cancelClase(selectedClase.id);
       setShowCancelModal(false);
       setSelectedClase(null);
       fetchClases();
@@ -76,7 +92,7 @@ const MisClases: React.FC = () => {
   };
 
   const titleStyles: React.CSSProperties = {
-    fontSize: '22px',
+    fontSize: '24px',
     fontWeight: 700,
     fontFamily: tokens.typography.families.display,
     color: tokens.colors.neutral.text_primary,
@@ -100,7 +116,7 @@ const MisClases: React.FC = () => {
     borderRadius: tokens.radii.md,
   };
 
-  const tabStyles = (isActive: boolean): React.CSSProperties => ({
+  const getTabButtonStyles = (isActive: boolean): React.CSSProperties => ({
     flex: 1,
     padding: `${tokens.spacing.space_3} ${tokens.spacing.space_4}`,
     backgroundColor: isActive ? tokens.colors.neutral.surface : 'transparent',
@@ -120,108 +136,19 @@ const MisClases: React.FC = () => {
     gap: tokens.spacing.space_2,
   });
 
-  const claseCardStyles: React.CSSProperties = {
-    backgroundColor: tokens.colors.neutral.surface,
-    borderRadius: tokens.radii.lg,
-    padding: tokens.spacing.space_4,
-    marginBottom: tokens.spacing.space_3,
-    boxShadow: tokens.shadows.card,
-    cursor: 'pointer',
-    transition: 'all 150ms ease-out',
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'space-between',
-  };
-
-  const claseInfoStyles: React.CSSProperties = {
-    display: 'flex',
-    flexDirection: 'column',
-    gap: tokens.spacing.space_2,
-    flex: 1,
-  };
-
-  const claseTitleStyles: React.CSSProperties = {
-    fontSize: '16px',
-    fontWeight: 600,
-    fontFamily: tokens.typography.families.body,
-    color: tokens.colors.neutral.text_primary,
-    margin: 0,
-  };
-
-  const claseMetaStyles: React.CSSProperties = {
-    display: 'flex',
-    gap: tokens.spacing.space_4,
-    flexWrap: 'wrap' as const,
-  };
-
-  const metaItemStyles: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    gap: tokens.spacing.space_1,
-    fontSize: '13px',
-    fontFamily: tokens.typography.families.body,
-    color: tokens.colors.neutral.text_muted,
-  };
-
-  const emptyStateStyles: React.CSSProperties = {
-    textAlign: 'center',
-    padding: tokens.spacing.space_12,
-    color: tokens.colors.neutral.text_muted,
-  };
-
-  const emptyTitleStyles: React.CSSProperties = {
-    fontSize: '16px',
-    fontWeight: 600,
-    fontFamily: tokens.typography.families.body,
-    marginBottom: tokens.spacing.space_2,
-    color: tokens.colors.neutral.text_secondary,
-  };
-
-  const emptyTextStyles: React.CSSProperties = {
-    fontSize: '14px',
-    fontFamily: tokens.typography.families.body,
-  };
-
-  const actionsStyles: React.CSSProperties = {
-    display: 'flex',
-    gap: tokens.spacing.space_2,
-  };
-
-  const actionButtonStyles: React.CSSProperties = {
-    display: 'flex',
-    alignItems: 'center',
-    justifyContent: 'center',
-    width: '36px',
-    height: '36px',
-    backgroundColor: 'transparent',
-    border: `1px solid ${tokens.colors.neutral.border}`,
-    borderRadius: tokens.radii.sm,
-    cursor: 'pointer',
-    color: tokens.colors.neutral.text_muted,
-    transition: 'all 150ms ease-out',
-  };
-
-  const formatDateTime = (isoString: string): string => {
-    const date = new Date(isoString);
-    const dias = ['Dom', 'Lun', 'Mar', 'Mié', 'Jue', 'Vie', 'Sáb'];
-    const meses = ['Ene', 'Feb', 'Mar', 'Abr', 'May', 'Jun', 'Jul', 'Ago', 'Sep', 'Oct', 'Nov', 'Dic'];
-    const dayName = dias[date.getDay()];
-    const dayNum = date.getDate();
-    const month = meses[date.getMonth()];
-    const hours = date.getHours().toString().padStart(2, '0');
-    const minutes = date.getMinutes().toString().padStart(2, '0');
-    return `${dayName} ${dayNum} ${month}, ${hours}:${minutes}`;
-  };
-
-  const getCuposInfo = (clase: Clase): string => {
-    return `${clase.cupos} cupos`;
+  const getTabCount = (tab: 'disponibles' | 'completas'): number => {
+    return tab === 'disponibles'
+      ? clasesData.clasesDisponibles.length
+      : clasesData.clasesCompletas.length;
   };
 
   if (authLoading || !isAuthenticated) {
     return null;
   }
 
-  const displayClases = activeTab === 'disponibles' ? clasesDisponibles : clasesCompletas;
+  const displayClases = activeTab === 'disponibles'
+    ? clasesData.clasesDisponibles
+    : clasesData.clasesCompletas;
 
   return (
     <div style={pageStyles}>
@@ -241,114 +168,31 @@ const MisClases: React.FC = () => {
         <div style={tabsContainerStyles}>
           <button
             type="button"
-            style={tabStyles(activeTab === 'disponibles')}
+            style={getTabButtonStyles(activeTab === 'disponibles')}
             onClick={() => setActiveTab('disponibles')}
           >
-            Próximas ({clasesDisponibles.length})
+            {getTabTitle('disponibles')} ({getTabCount('disponibles')})
           </button>
           <button
             type="button"
-            style={tabStyles(activeTab === 'completas')}
+            style={getTabButtonStyles(activeTab === 'completas')}
             onClick={() => setActiveTab('completas')}
           >
-            Pasadas ({clasesCompletas.length})
+            {getTabTitle('completas')} ({getTabCount('completas')})
           </button>
         </div>
 
-        {isLoading ? (
-          <div style={emptyStateStyles}>
-            <p>Cargando clases...</p>
-          </div>
-        ) : error ? (
-          <div style={emptyStateStyles}>
-            <p style={{ color: tokens.colors.semantic.danger }}>{error}</p>
-          </div>
-        ) : displayClases.length === 0 ? (
-          <div style={emptyStateStyles}>
-            <p style={emptyTitleStyles}>
-              {activeTab === 'disponibles'
-                ? 'No tienes clases programadas'
-                : 'No hay clases pasadas'}
-            </p>
-            <p style={emptyTextStyles}>
-              {activeTab === 'disponibles'
-                ? 'Las clases que crees aparecerán aquí'
-                : 'Las clases completadas aparecerán aquí'}
-            </p>
-          </div>
-        ) : (
-          displayClases.map((clase) => (
-            <div
-              key={clase.id}
-              style={claseCardStyles}
-              onClick={() => navigate(`/clases/${clase.id}`)}
-              onMouseEnter={(e) => {
-                e.currentTarget.style.boxShadow = tokens.shadows.card_hover;
-                e.currentTarget.style.transform = 'translateY(-2px)';
-              }}
-              onMouseLeave={(e) => {
-                e.currentTarget.style.boxShadow = tokens.shadows.card;
-                e.currentTarget.style.transform = 'translateY(0)';
-              }}
-              role="button"
-              tabIndex={0}
-              onKeyDown={(e) => {
-                if (e.key === 'Enter' || e.key === ' ') {
-                  navigate(`/clases/${clase.id}`);
-                }
-              }}
-            >
-              <div style={claseInfoStyles}>
-                <h3 style={claseTitleStyles}>{clase.nombre}</h3>
-                <div style={claseMetaStyles}>
-                  <span style={metaItemStyles}>
-                    <Calendar size={14} strokeWidth={1.75} />
-                    {formatDateTime(clase.inicio)}
-                  </span>
-                  <span style={metaItemStyles}>
-                    <Clock size={14} strokeWidth={1.75} />
-                    {new Date(clase.fin).getHours() - new Date(clase.inicio).getHours()}h
-                  </span>
-                  <span style={metaItemStyles}>
-                    <Users size={14} strokeWidth={1.75} />
-                    {getCuposInfo(clase)}
-                  </span>
-                </div>
-              </div>
-
-              <div style={actionsStyles}>
-                <button
-                  type="button"
-                  style={actionButtonStyles}
-                  onClick={(e) => {
-                    e.stopPropagation();
-                    navigate(`/clases/${clase.id}/editar`);
-                  }}
-                  aria-label="Editar clase"
-                >
-                  <Edit2 size={16} strokeWidth={1.75} />
-                </button>
-                {activeTab === 'disponibles' && (
-                  <button
-                    type="button"
-                    style={{
-                      ...actionButtonStyles,
-                      color: tokens.colors.semantic.danger,
-                    }}
-                    onClick={(e) => {
-                      e.stopPropagation();
-                      handleCancelClase(clase);
-                    }}
-                    aria-label="Cancelar clase"
-                  >
-                    <Trash2 size={16} strokeWidth={1.75} />
-                  </button>
-                )}
-                <ChevronRight size={20} strokeWidth={1.75} color={tokens.colors.neutral.text_muted} />
-              </div>
-            </div>
-          ))
-        )}
+        <ListaClases
+          clases={displayClases}
+          isLoading={isLoading}
+          error={error}
+          isPast={activeTab === 'completas'}
+          onCancel={handleCancelClase}
+          onEdit={handleEditClase}
+          onSelect={handleSelectClase}
+          emptyTitle={getEmptyTitle(activeTab)}
+          emptyDescription={getEmptyDescription(activeTab)}
+        />
       </div>
 
       <ModalConfirmacion

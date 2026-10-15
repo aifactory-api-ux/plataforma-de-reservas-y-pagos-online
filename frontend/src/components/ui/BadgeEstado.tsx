@@ -23,15 +23,19 @@ const iconMap: Record<string, React.ReactNode> = {
   user_x: <UserX size={14} strokeWidth={1.75} />,
 };
 
-export const BadgeEstado: React.FC<BadgeEstadoProps> = ({
-  status,
-  showLabel = true,
-  size = 'md',
-}) => {
-  const config = tokens.colors.reservation_status[status];
-  const icon = iconMap[config.icon] || <Clock size={14} strokeWidth={1.75} />;
+const getStatusConfig = (status: ReservationStatus) => {
+  return tokens.colors.reservation_status[status];
+};
 
-  const containerStyles: React.CSSProperties = {
+const getIcon = (status: ReservationStatus): React.ReactNode => {
+  const config = getStatusConfig(status);
+  const iconName = config.icon;
+  return iconMap[iconName] || <Clock size={14} strokeWidth={1.75} />;
+};
+
+const getContainerStyles = (status: ReservationStatus, size: 'sm' | 'md'): React.CSSProperties => {
+  const config = getStatusConfig(status);
+  return {
     display: 'inline-flex',
     alignItems: 'center',
     gap: size === 'sm' ? tokens.spacing.space_1 : tokens.spacing.space_2,
@@ -42,13 +46,19 @@ export const BadgeEstado: React.FC<BadgeEstadoProps> = ({
     backgroundColor: config.fill,
     border: `1px solid ${config.border}`,
   };
+};
 
-  const iconStyles: React.CSSProperties = {
+const getIconStyles = (status: ReservationStatus): React.CSSProperties => {
+  const config = getStatusConfig(status);
+  return {
     color: config.text,
     flexShrink: 0,
   };
+};
 
-  const labelStyles: React.CSSProperties = {
+const getLabelStyles = (status: ReservationStatus, size: 'sm' | 'md'): React.CSSProperties => {
+  const config = getStatusConfig(status);
+  return {
     fontSize: size === 'sm' ? '11px' : '12px',
     fontWeight: 600,
     fontFamily: tokens.typography.families.body,
@@ -57,6 +67,18 @@ export const BadgeEstado: React.FC<BadgeEstadoProps> = ({
     textTransform: 'uppercase',
     lineHeight: 1,
   };
+};
+
+export const BadgeEstado: React.FC<BadgeEstadoProps> = ({
+  status,
+  showLabel = true,
+  size = 'md',
+}) => {
+  const config = getStatusConfig(status);
+  const icon = getIcon(status);
+  const containerStyles = getContainerStyles(status, size);
+  const iconStyles = getIconStyles(status);
+  const labelStyles = getLabelStyles(status, size);
 
   return (
     <span style={containerStyles} role="status" aria-label={config.label}>

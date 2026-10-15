@@ -11,7 +11,16 @@ interface PaymentStatusProps {
   isLoading?: boolean;
 }
 
-const getStatusConfig = (status: EstadoPago) => {
+type StatusConfig = {
+  icon: typeof CheckCircle;
+  label: string;
+  color: string;
+  bgColor: string;
+  borderColor: string;
+  textColor: string;
+};
+
+const getStatusConfig = (status: EstadoPago): StatusConfig => {
   switch (status) {
     case 'completado':
       return {

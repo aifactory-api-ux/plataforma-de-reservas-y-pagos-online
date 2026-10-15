@@ -2,19 +2,18 @@ version: '3.8'
 
 services:
   postgres:
-    image: postgres:15-alpine
-
+    image: postgres:15.4-alpine
     environment:
-      POSTGRES_USER: ${DB_USERNAME:-sporty}
-      POSTGRES_PASSWORD: ${DB_PASSWORD:-sporty_secret}
-      POSTGRES_DB: ${DB_NAME:-sporty_db}
+      POSTGRES_USER: ${DB_USERNAME:?DB_USERNAME must be set - no fallback allowed}
+      POSTGRES_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set - no fallback allowed}
+      POSTGRES_DB: ${DB_NAME:?DB_NAME must be set - no fallback allowed}
     ports:
       - "5432:5432"
     volumes:
       - postgres_data:/var/lib/postgresql/data
       - ./backend/database/schema.sql:/docker-entrypoint-initdb.d/01-schema.sql:ro
     healthcheck:
-      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:-sporty}"]
+      test: ["CMD-SHELL", "pg_isready -U ${DB_USERNAME:?DB_USERNAME must be set} -h 127.0.0.1"]
       interval: 10s
       timeout: 5s
       retries: 5
@@ -26,21 +25,20 @@ services:
     build:
       context: ./backend/auth-service
       dockerfile: Dockerfile
-
     environment:
       NODE_ENV: production
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: ${DB_USERNAME:-sporty}
-      DB_PASSWORD: ${DB_PASSWORD:-sporty_secret}
-      DB_NAME: ${DB_NAME:-sporty_db}
-      JWT_SECRET: ${JWT_SECRET:-sporty-jwt-secret-change-in-production}
-      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:-sporty-jwt-refresh-secret-change-in-production}
-      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:-}
-      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:-}
-      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:-http://localhost:23007/auth/callback}
-      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
-      SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL:-noreply@sporty.cl}
+      DB_USERNAME: ${DB_USERNAME:?DB_USERNAME must be set - no fallback allowed}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set - no fallback allowed}
+      DB_NAME: ${DB_NAME:?DB_NAME must be set - no fallback allowed}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set - no fallback allowed}
+      JWT_REFRESH_SECRET: ${JWT_REFRESH_SECRET:?JWT_REFRESH_SECRET must be set - no fallback allowed}
+      GOOGLE_CLIENT_ID: ${GOOGLE_CLIENT_ID:?GOOGLE_CLIENT_ID must be set - no fallback allowed}
+      GOOGLE_CLIENT_SECRET: ${GOOGLE_CLIENT_SECRET:?GOOGLE_CLIENT_SECRET must be set - no fallback allowed}
+      GOOGLE_CALLBACK_URL: ${GOOGLE_CALLBACK_URL:?GOOGLE_CALLBACK_URL must be set - no fallback allowed}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:?SENDGRID_API_KEY must be set - no fallback allowed}
+      SENDGRID_FROM_EMAIL: ${SENDGRID_FROM_EMAIL:?SENDGRID_FROM_EMAIL must be set - no fallback allowed}
       APP_PORT: 23001
     ports:
       - "23001:23001"
@@ -48,7 +46,7 @@ services:
       postgres:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:23001/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:23001/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -60,15 +58,14 @@ services:
     build:
       context: ./backend/reservas-service
       dockerfile: Dockerfile
-
     environment:
       NODE_ENV: production
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: ${DB_USERNAME:-sporty}
-      DB_PASSWORD: ${DB_PASSWORD:-sporty_secret}
-      DB_NAME: ${DB_NAME:-sporty_db}
-      JWT_SECRET: ${JWT_SECRET:-sporty-jwt-secret-change-in-production}
+      DB_USERNAME: ${DB_USERNAME:?DB_USERNAME must be set - no fallback allowed}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set - no fallback allowed}
+      DB_NAME: ${DB_NAME:?DB_NAME must be set - no fallback allowed}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set - no fallback allowed}
       AUTH_SERVICE_URL: http://auth-service:23001
       APP_PORT: 23002
     ports:
@@ -79,7 +76,7 @@ services:
       auth-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:23002/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:23002/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -91,23 +88,22 @@ services:
     build:
       context: ./backend/pagos-service
       dockerfile: Dockerfile
-
     environment:
       NODE_ENV: production
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: ${DB_USERNAME:-sporty}
-      DB_PASSWORD: ${DB_PASSWORD:-sporty_secret}
-      DB_NAME: ${DB_NAME:-sporty_db}
-      JWT_SECRET: ${JWT_SECRET:-sporty-jwt-secret-change-in-production}
+      DB_USERNAME: ${DB_USERNAME:?DB_USERNAME must be set - no fallback allowed}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set - no fallback allowed}
+      DB_NAME: ${DB_NAME:?DB_NAME must be set - no fallback allowed}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set - no fallback allowed}
       AUTH_SERVICE_URL: http://auth-service:23001
-      WEBPAY_COMMERCE_CODE: ${WEBPAY_COMMERCE_CODE:-}
-      WEBPAY_API_KEY: ${WEBPAY_API_KEY:-}
-      WEBPAY_RETURN_URL: ${WEBPAY_RETURN_URL:-http://localhost:23007/pagos/return}
-      WEBPAY_CALLBACK_URL: ${WEBPAY_CALLBACK_URL:-http://localhost:23007/pagos/callback}
-      SENDGRID_API_KEY: ${SENDGRID_API_KEY:-}
-      WHATSAPP_API_URL: ${WHATSAPP_API_URL:-}
-      WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN:-}
+      WEBPAY_COMMERCE_CODE: ${WEBPAY_COMMERCE_CODE:?WEBPAY_COMMERCE_CODE must be set - no fallback allowed}
+      WEBPAY_API_KEY: ${WEBPAY_API_KEY:?WEBPAY_API_KEY must be set - no fallback allowed}
+      WEBPAY_RETURN_URL: ${WEBPAY_RETURN_URL:?WEBPAY_RETURN_URL must be set - no fallback allowed}
+      WEBPAY_CALLBACK_URL: ${WEBPAY_CALLBACK_URL:?WEBPAY_CALLBACK_URL must be set - no fallback allowed}
+      SENDGRID_API_KEY: ${SENDGRID_API_KEY:?SENDGRID_API_KEY must be set - no fallback allowed}
+      WHATSAPP_API_URL: ${WHATSAPP_API_URL:?WHATSAPP_API_URL must be set - no fallback allowed}
+      WHATSAPP_API_TOKEN: ${WHATSAPP_API_TOKEN:?WHATSAPP_API_TOKEN must be set - no fallback allowed}
       APP_PORT: 23003
     ports:
       - "23003:23003"
@@ -117,7 +113,7 @@ services:
       auth-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:23003/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:23003/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -129,15 +125,14 @@ services:
     build:
       context: ./backend/sedes-service
       dockerfile: Dockerfile
-
     environment:
       NODE_ENV: production
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: ${DB_USERNAME:-sporty}
-      DB_PASSWORD: ${DB_PASSWORD:-sporty_secret}
-      DB_NAME: ${DB_NAME:-sporty_db}
-      JWT_SECRET: ${JWT_SECRET:-sporty-jwt-secret-change-in-production}
+      DB_USERNAME: ${DB_USERNAME:?DB_USERNAME must be set - no fallback allowed}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set - no fallback allowed}
+      DB_NAME: ${DB_NAME:?DB_NAME must be set - no fallback allowed}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set - no fallback allowed}
       AUTH_SERVICE_URL: http://auth-service:23001
       APP_PORT: 23004
     ports:
@@ -148,7 +143,7 @@ services:
       auth-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:23004/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:23004/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -160,15 +155,14 @@ services:
     build:
       context: ./backend/clases-service
       dockerfile: Dockerfile
-
     environment:
       NODE_ENV: production
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: ${DB_USERNAME:-sporty}
-      DB_PASSWORD: ${DB_PASSWORD:-sporty_secret}
-      DB_NAME: ${DB_NAME:-sporty_db}
-      JWT_SECRET: ${JWT_SECRET:-sporty-jwt-secret-change-in-production}
+      DB_USERNAME: ${DB_USERNAME:?DB_USERNAME must be set - no fallback allowed}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set - no fallback allowed}
+      DB_NAME: ${DB_NAME:?DB_NAME must be set - no fallback allowed}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set - no fallback allowed}
       AUTH_SERVICE_URL: http://auth-service:23001
       APP_PORT: 23005
     ports:
@@ -179,7 +173,7 @@ services:
       auth-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:23005/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:23005/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -191,15 +185,14 @@ services:
     build:
       context: ./backend/admin-service
       dockerfile: Dockerfile
-
     environment:
       NODE_ENV: production
       DB_HOST: postgres
       DB_PORT: 5432
-      DB_USERNAME: ${DB_USERNAME:-sporty}
-      DB_PASSWORD: ${DB_PASSWORD:-sporty_secret}
-      DB_NAME: ${DB_NAME:-sporty_db}
-      JWT_SECRET: ${JWT_SECRET:-sporty-jwt-secret-change-in-production}
+      DB_USERNAME: ${DB_USERNAME:?DB_USERNAME must be set - no fallback allowed}
+      DB_PASSWORD: ${DB_PASSWORD:?DB_PASSWORD must be set - no fallback allowed}
+      DB_NAME: ${DB_NAME:?DB_NAME must be set - no fallback allowed}
+      JWT_SECRET: ${JWT_SECRET:?JWT_SECRET must be set - no fallback allowed}
       AUTH_SERVICE_URL: http://auth-service:23001
       APP_PORT: 23006
     ports:
@@ -210,7 +203,7 @@ services:
       auth-service:
         condition: service_healthy
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:23006/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:23006/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3
@@ -222,7 +215,6 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-
     ports:
       - "23007:80"
     depends_on:
@@ -233,7 +225,7 @@ services:
       - clases-service
       - admin-service
     healthcheck:
-      test: ["CMD-SHELL", "wget -q --spider http://localhost:80/health || exit 1"]
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:80/health || exit 1"]
       interval: 30s
       timeout: 10s
       retries: 3

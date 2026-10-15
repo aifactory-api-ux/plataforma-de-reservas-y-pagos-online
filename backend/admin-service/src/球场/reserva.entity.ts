@@ -6,9 +6,9 @@ import {
   ManyToOne,
   JoinColumn,
 } from 'typeorm';
-import { Jugador } from '../../admin/entities/jugador.entity';
-import { Cancha } from '../../admin/entities/cancha.entity';
-import { Tarifa } from '../../admin/entities/tarifa.entity';
+import { Jugador } from '../admin/entities/jugador.entity';
+import { Cancha } from '../admin/entities/cancha.entity';
+import { Tarifa } from '../admin/entities/tarifa.entity';
 
 export type ReservaEstado = 'retenida' | 'pagada' | 'cancelada' | 'asistio' | 'no_asistio';
 

@@ -13,24 +13,33 @@ interface SplitPaymentOptionsProps {
 const MIN_JUGADORES = 2;
 const MAX_JUGADORES = 4;
 
+const getNextJugadoresCount = (current: number, delta: number): number => {
+  const next = current + delta;
+  if (next < MIN_JUGADORES || next > MAX_JUGADORES) return current;
+  return next;
+};
+
+const canIncrement = (count: number): boolean => count < MAX_JUGADORES;
+const canDecrement = (count: number): boolean => count > MIN_JUGADORES;
+
 const SplitPaymentOptions: React.FC<SplitPaymentOptionsProps> = ({
   montoTotal,
   onSplitSelect,
   onContinueFullPayment,
   isLoading = false,
 }) => {
-  const [jugadoresCount, setJugadoresCount] = useState<number>(2);
+  const [jugadoresCount, setJugadoresCount] = useState<number>(MIN_JUGADORES);
   const [showSplitOptions, setShowSplitOptions] = useState(false);
 
   const handleIncrement = () => {
-    if (jugadoresCount < MAX_JUGADORES) {
-      setJugadoresCount(prev => prev + 1);
+    if (canIncrement(jugadoresCount)) {
+      setJugadoresCount(prev => getNextJugadoresCount(prev, 1));
     }
   };
 
   const handleDecrement = () => {
-    if (jugadoresCount > MIN_JUGADORES) {
-      setJugadoresCount(prev => prev - 1);
+    if (canDecrement(jugadoresCount)) {
+      setJugadoresCount(prev => getNextJugadoresCount(prev, -1));
     }
   };
 

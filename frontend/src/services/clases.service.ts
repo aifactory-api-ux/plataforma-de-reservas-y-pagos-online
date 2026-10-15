@@ -10,35 +10,35 @@ export interface MisClasesProfesorResponse {
 
 class ClasesService {
   async getMisClases(profesorId: number): Promise<MisClasesProfesorResponse> {
-    return apiFetch.get<MisClasesProfesorResponse>(`/api/clases/profesor/${profesorId}`);
+    return apiFetch.get<MisClasesProfesorResponse>(`/clases/profesor/${profesorId}`);
   }
 
   async getClase(claseId: number): Promise<Clase> {
-    return apiFetch.get<Clase>(`/api/clases/${claseId}`);
+    return apiFetch.get<Clase>(`/clases/${claseId}`);
   }
 
   async getInscripciones(claseId: number): Promise<InscripcionClase[]> {
-    return apiFetch.get<InscripcionClase[]>(`/api/clases/${claseId}/inscripciones`);
+    return apiFetch.get<InscripcionClase[]>(`/clases/${claseId}/inscripciones`);
   }
 
   async createClase(data: CreateClaseRequest): Promise<Clase> {
-    return apiFetch.post<Clase>('/api/clases', data);
+    return apiFetch.post<Clase>('/clases', data);
   }
 
   async updateClase(claseId: number, data: Partial<CreateClaseRequest>): Promise<Clase> {
-    return apiFetch.put<Clase>(`/api/clases/${claseId}`, data);
+    return apiFetch.put<Clase>(`/clases/${claseId}`, data);
   }
 
   async cancelClase(claseId: number): Promise<void> {
-    await apiFetch.delete(`/api/clases/${claseId}`);
+    await apiFetch.delete(`/clases/${claseId}`);
   }
 
   async inscribirJugador(data: InscripcionClaseRequest): Promise<InscripcionClase> {
-    return apiFetch.post<InscripcionClase>('/api/clases/inscripcion', data);
+    return apiFetch.post<InscripcionClase>('/clases/inscripcion', data);
   }
 
   async desinscribirJugador(inscripcionId: number): Promise<void> {
-    await apiFetch.delete(`/api/clases/inscripcion/${inscripcionId}`);
+    await apiFetch.delete(`/clases/inscripcion/${inscripcionId}`);
   }
 }
 

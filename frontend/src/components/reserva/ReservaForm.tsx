@@ -4,7 +4,8 @@ import { tokens } from '../../styles/tokens';
 import { BotonAccionPrincipal } from '../ui/BotonAccionPrincipal';
 import { ModalConfirmacion } from '../ui/ModalConfirmacion';
 import { useReservas } from '../../context/ReservationContext';
-import type { AvailabilitySlot, CreateReservationInput } from '../../types/models';
+import type { AvailabilitySlot } from '../../types/models';
+import type { CreateReservationRequest } from '../../types/api';
 
 interface ReservaFormProps {
   slot: AvailabilitySlot;
@@ -35,11 +36,10 @@ const ReservaForm: React.FC<ReservaFormProps> = ({
     setLocalError(null);
 
     const fecha = new Date().toISOString().split('T')[0];
-    const [hours, minutes] = slot.hora.split(':').map(Number);
     const inicio = new Date(`${fecha}T${slot.hora}:00`);
     const fin = new Date(inicio.getTime() + 60 * 60 * 1000);
 
-    const reservaData: CreateReservationInput = {
+    const reservaData: CreateReservationRequest = {
       canchaId: slot.canchaId,
       tarifaId: 0,
       inicio: inicio.toISOString(),

@@ -1,5 +1,5 @@
 import React, { useState } from 'react';
-import { Calendar, ChevronDown } from 'lucide-react';
+import { Calendar } from 'lucide-react';
 import { tokens } from '../../styles/tokens';
 import type { Sede, Filters, FranjaHoraria } from '../../types/models';
 

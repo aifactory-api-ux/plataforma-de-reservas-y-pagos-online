@@ -4,8 +4,6 @@ import type {
   Tarifa,
   BloqueoJugador,
   Jugador,
-  Reserva,
-  Pago,
   Sede,
   Cancha,
   Clase,
@@ -75,60 +73,60 @@ export interface EstadisticasResumen {
 
 class AdminService {
   async getUsuarios(): Promise<UsuarioPersonal[]> {
-    return apiFetch.get<UsuarioPersonal[]>('/api/admin/usuarios');
+    return apiFetch.get<UsuarioPersonal[]>('/admin/usuarios');
   }
 
   async getUsuario(usuarioId: number): Promise<UsuarioPersonal> {
-    return apiFetch.get<UsuarioPersonal>(`/api/admin/usuarios/${usuarioId}`);
+    return apiFetch.get<UsuarioPersonal>(`/admin/usuarios/${usuarioId}`);
   }
 
   async createUsuario(data: CreateUsuarioRequest): Promise<UsuarioPersonal> {
-    return apiFetch.post<UsuarioPersonal>('/api/admin/usuarios', data);
+    return apiFetch.post<UsuarioPersonal>('/admin/usuarios', data);
   }
 
   async updateUsuario(usuarioId: number, data: UpdateUsuarioRequest): Promise<UsuarioPersonal> {
-    return apiFetch.put<UsuarioPersonal>(`/api/admin/usuarios/${usuarioId}`, data);
+    return apiFetch.put<UsuarioPersonal>(`/admin/usuarios/${usuarioId}`, data);
   }
 
   async deactivateUsuario(usuarioId: number): Promise<void> {
-    await apiFetch.delete(`/api/admin/usuarios/${usuarioId}`);
+    await apiFetch.delete(`/admin/usuarios/${usuarioId}`);
   }
 
   async getTarifas(deporte?: 'padel' | 'futbol7'): Promise<Tarifa[]> {
     const params = deporte ? `?deporte=${deporte}` : '';
-    return apiFetch.get<Tarifa[]>(`/api/admin/tarifas${params}`);
+    return apiFetch.get<Tarifa[]>(`/admin/tarifas${params}`);
   }
 
   async getTarifa(tarifaId: number): Promise<Tarifa> {
-    return apiFetch.get<Tarifa>(`/api/admin/tarifas/${tarifaId}`);
+    return apiFetch.get<Tarifa>(`/admin/tarifas/${tarifaId}`);
   }
 
   async createTarifa(data: CreateTarifaRequest): Promise<Tarifa> {
-    return apiFetch.post<Tarifa>('/api/admin/tarifas', data);
+    return apiFetch.post<Tarifa>('/admin/tarifas', data);
   }
 
   async updateTarifa(tarifaId: number, data: UpdateTarifaRequest): Promise<Tarifa> {
-    return apiFetch.put<Tarifa>(`/api/admin/tarifas/${tarifaId}`, data);
+    return apiFetch.put<Tarifa>(`/admin/tarifas/${tarifaId}`, data);
   }
 
   async deleteTarifa(tarifaId: number): Promise<void> {
-    await apiFetch.delete(`/api/admin/tarifas/${tarifaId}`);
+    await apiFetch.delete(`/admin/tarifas/${tarifaId}`);
   }
 
   async getJugadoresBloqueados(): Promise<Jugador[]> {
-    return apiFetch.get<Jugador[]>('/api/admin/jugadores/bloqueados');
+    return apiFetch.get<Jugador[]>('/admin/jugadores/bloqueados');
   }
 
   async getBloqueosJugadores(): Promise<BloqueoJugador[]> {
-    return apiFetch.get<BloqueoJugador[]>('/api/admin/bloqueos-jugadores');
+    return apiFetch.get<BloqueoJugador[]>('/admin/bloqueo-jugador');
   }
 
   async createBloqueoJugador(data: CreateBloqueoJugadorRequest): Promise<BloqueoJugador> {
-    return apiFetch.post<BloqueoJugador>('/api/admin/bloqueo-jugador', data);
+    return apiFetch.post<BloqueoJugador>('/admin/bloqueo-jugador', data);
   }
 
   async releaseBloqueoJugador(bloqueoId: number): Promise<void> {
-    await apiFetch.delete(`/api/admin/bloqueo-jugador/${bloqueoId}`);
+    await apiFetch.delete(`/admin/bloqueo-jugador/${bloqueoId}`);
   }
 
   async getReporteReservasExcel(params: ReporteReservasParams): Promise<Blob> {
@@ -140,7 +138,7 @@ class AdminService {
       searchParams.append('sedeId', params.sedeId.toString());
     }
 
-    const response = await fetch(`/api/admin/reportes/reservas?${searchParams.toString()}`, {
+    const response = await fetch(`/admin/reportes/reservas?${searchParams.toString()}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('accessToken') || ''}`,
@@ -163,7 +161,7 @@ class AdminService {
       searchParams.append('sedeId', params.sedeId.toString());
     }
 
-    const response = await fetch(`/api/admin/reportes/pagos?${searchParams.toString()}`, {
+    const response = await fetch(`/admin/reportes/pagos?${searchParams.toString()}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('accessToken') || ''}`,
@@ -186,7 +184,7 @@ class AdminService {
       searchParams.append('sedeId', params.sedeId.toString());
     }
 
-    const response = await fetch(`/api/admin/reportes/no-shows?${searchParams.toString()}`, {
+    const response = await fetch(`/admin/reportes/no-shows?${searchParams.toString()}`, {
       method: 'GET',
       headers: {
         Authorization: `Bearer ${localStorage.getItem('accessToken') || ''}`,
@@ -202,19 +200,19 @@ class AdminService {
 
   async getEstadisticas(sedeId?: number): Promise<EstadisticasResumen> {
     const params = sedeId ? `?sedeId=${sedeId}` : '';
-    return apiFetch.get<EstadisticasResumen>(`/api/admin/reportes/estadisticas${params}`);
+    return apiFetch.get<EstadisticasResumen>(`/admin/reportes/estadisticas${params}`);
   }
 
   async getSedes(): Promise<Sede[]> {
-    return apiFetch.get<Sede[]>('/api/sedes');
+    return apiFetch.get<Sede[]>('/sedes');
   }
 
   async getCanchas(sedeId: number): Promise<Cancha[]> {
-    return apiFetch.get<Cancha[]>(`/api/sedes/${sedeId}/canchas`);
+    return apiFetch.get<Cancha[]>(`/sedes/${sedeId}/canchas`);
   }
 
   async getClases(): Promise<Clase[]> {
-    return apiFetch.get<Clase[]>('/api/clases');
+    return apiFetch.get<Clase[]>('/clases');
   }
 }
 

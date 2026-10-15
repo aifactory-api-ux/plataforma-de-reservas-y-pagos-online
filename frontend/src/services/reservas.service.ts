@@ -13,24 +13,24 @@ export interface MisReservasResponse {
 
 class ReservasService {
   async createReservation(data: CreateReservationRequest): Promise<Reserva> {
-    const response = await apiFetch.post<ReservaResponse>('/api/reservas', data);
+    const response = await apiFetch.post<ReservaResponse>('/reservas', data);
     return response.reserva;
   }
 
   async getReserva(reservaId: number): Promise<Reserva> {
-    return apiFetch.get<Reserva>(`/api/reservas/${reservaId}`);
+    return apiFetch.get<Reserva>(`/reservas/${reservaId}`);
   }
 
   async cancelReservation(reservaId: number, motivo?: string): Promise<void> {
     if (motivo) {
-      await apiFetch.patch(`/api/reservas/${reservaId}`, { estado: 'cancelada', motivo });
+      await apiFetch.patch(`/reservas/${reservaId}`, { estado: 'cancelada', motivo });
     } else {
-      await apiFetch.delete(`/api/reservas/${reservaId}`);
+await apiFetch.delete(`/reservas/${reservaId}`);
     }
   }
 
   async getMyReservas(): Promise<Reserva[]> {
-    const response = await apiFetch.get<MisReservasResponse>('/api/reservas/mis-reservas');
+    const response = await apiFetch.get<MisReservasResponse>('/reservas/mis-reservas');
     return response.reservas;
   }
 
@@ -45,7 +45,7 @@ class ReservasService {
       params.append('franja', filters.rangoHorario);
     }
 
-    return apiFetch.get<AvailabilitySlot[]>(`/api/disponibilidad?${params.toString()}`);
+    return apiFetch.get<AvailabilitySlot[]>(`/disponibilidad?${params.toString()}`);
   }
 
   async releaseRetention(reservaId: number): Promise<void> {
@@ -56,8 +56,20 @@ class ReservasService {
     reservaId: number,
     estado: 'asistio' | 'no_asistio'
   ): Promise<Reserva> {
-    return apiFetch.patch<Reserva>(`/api/reservas/${reservaId}/asistencia`, {
+    return apiFetch.patch<Reserva>(`/reservas/${reservaId}/asistencia`, {
       estado,
+    });
+  }
+
+  async checkSlotDisponibilidad(
+    canchaId: number,
+    inicio: string,
+    fin: string
+  ): Promise<{ disponible: boolean }> {
+    return apiFetch.post<{ disponible: boolean }>('/reservas/check-disponibilidad', {
+      canchaId,
+      inicio,
+      fin,
     });
   }
 }

@@ -187,13 +187,13 @@ export class AdminController {
 
   @Get('reportes/reservas')
   async getReporteReservas(
+    @Request() req: any,
+    @Res() res: Response,
     @Query('fechaInicio') fechaInicio: string,
     @Query('fechaFin') fechaFin: string,
     @Query('sedeId') sedeId?: string,
     @Query('estado') estado?: string,
     @Query('formato') formato?: string,
-    @Request() req: any,
-    @Res() res?: Response,
   ) {
     if (formato === 'excel') {
       const buffer = await this.reportesService.getReporteReservasExcel(
@@ -226,13 +226,13 @@ export class AdminController {
 
   @Get('reportes/pagos')
   async getReportePagos(
+    @Request() req: any,
+    @Res() res: Response,
     @Query('fechaInicio') fechaInicio: string,
     @Query('fechaFin') fechaFin: string,
     @Query('sedeId') sedeId?: string,
     @Query('estado') estado?: string,
     @Query('formato') formato?: string,
-    @Request() req: any,
-    @Res() res?: Response,
   ) {
     if (formato === 'excel') {
       const buffer = await this.reportesService.getReportePagosExcel(
@@ -258,12 +258,12 @@ export class AdminController {
 
   @Get('reportes/no-shows')
   async getReporteNoShows(
+    @Request() req: any,
+    @Res() res: Response,
     @Query('fechaInicio') fechaInicio: string,
     @Query('fechaFin') fechaFin: string,
     @Query('sedeId', ParseIntPipe) sedeId: number,
     @Query('formato') formato?: string,
-    @Request() req: any,
-    @Res() res?: Response,
   ) {
     if (formato === 'excel') {
       const buffer = await this.reportesService.getReporteNoShowsExcel(
@@ -288,10 +288,10 @@ export class AdminController {
 
   @Get('reportes/estadisticas')
   async getEstadisticas(
+    @Request() req: any,
     @Query('fechaInicio') fechaInicio: string,
     @Query('fechaFin') fechaFin: string,
     @Query('sedeId') sedeId?: string,
-    @Request() req: any,
   ) {
     const estadisticas = await this.reportesService.getResumenEstadisticas(
       sedeId ? parseInt(sedeId, 10) : undefined,

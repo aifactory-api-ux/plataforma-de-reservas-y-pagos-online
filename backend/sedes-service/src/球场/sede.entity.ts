@@ -7,7 +7,7 @@ import {
   OneToMany,
 } from 'typeorm';
 import { Cancha } from './cancha.entity';
-import { UsuarioPersonal } from './usuario-personal.entity';
+import { UsuarioPersonal } from '../sedes/entities/usuario-personal.entity';
 
 @Entity('sede')
 export class Sede {

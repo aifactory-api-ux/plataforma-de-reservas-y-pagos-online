@@ -16,42 +16,42 @@ export interface LoginResponse {
 
 class AuthService {
   async loginWithEmail(credentials: LoginRequest): Promise<AuthResponse> {
-    return apiFetch.post<AuthResponse>('/api/auth/login', credentials);
+    return apiFetch.post<AuthResponse>('/auth/login', credentials);
   }
 
   async loginWithGoogle(idToken: string): Promise<AuthResponse> {
     const request: GoogleLoginRequest = { idToken };
-    const response = await apiFetch.post<LoginResponse>('/api/auth/google', request);
+    const response = await apiFetch.post<LoginResponse>('/auth/google', request);
 
     if (response.requiresConsent && response.user) {
       throw new Error('CONSENT_REQUIRED');
     }
 
-    return response as AuthResponse;
+    return response as unknown as AuthResponse;
   }
 
   async refreshToken(request: RefreshTokenRequest): Promise<AuthResponse> {
-    return apiFetch.post<AuthResponse>('/api/auth/refresh', request);
+    return apiFetch.post<AuthResponse>('/auth/refresh', request);
   }
 
   async logout(refreshToken: string): Promise<void> {
-    await apiFetch.post('/api/auth/logout', { refreshToken });
+    await apiFetch.post('/auth/logout', { refreshToken });
   }
 
   async requestPasswordReset(request: PasswordResetRequest): Promise<void> {
-    await apiFetch.post('/api/auth/password-reset', request);
+    await apiFetch.post('/auth/password-reset', request);
   }
 
   async getCurrentUser(): Promise<{ user: Jugador | UsuarioPersonal }> {
-    return apiFetch.get<{ user: Jugador | UsuarioPersonal }>('/api/auth/me');
+    return apiFetch.get<{ user: Jugador | UsuarioPersonal }>('/auth/me');
   }
 
   async acceptConsent(request: ConsentimientoRequest): Promise<void> {
-    await apiFetch.post('/api/auth/consentimiento', request);
+    await apiFetch.post('/auth/consent', request);
   }
 
   async getConsentimiento(): Promise<{ consentimiento: { id: number; version: string; aceptado: boolean } }> {
-    return apiFetch.get<{ consentimiento: { id: number; version: string; aceptado: boolean } }>('/api/auth/consentimiento');
+    return apiFetch.get<{ consentimiento: { id: number; version: string; aceptado: boolean } }>('/auth/consent');
   }
 }
 

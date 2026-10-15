@@ -102,10 +102,6 @@ export const AgendaGrilla: React.FC<AgendaGrillaProps> = ({
     gridTemplateColumns: `80px repeat(${courts.length}, 1fr)`,
   };
 
-  const getRowStyles = (): React.CSSProperties => ({
-    display: 'contents',
-  });
-
   const hourCellStyles: React.CSSProperties = {
     padding: `${tokens.spacing.space_2} ${tokens.spacing.space_2}`,
     fontSize: '12px',
