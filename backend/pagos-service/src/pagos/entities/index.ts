@@ -1,0 +1,12 @@
+export { Pago } from './pago.entity';
+export { Devolucion } from './devolucion.entity';
+export { Reserva } from './reserva.entity';
+export { Jugador } from './jugador.entity';
+export { Cancha, Sede } from './cancha.entity';
+export { Tarifa } from './tarifa.entity';
+export { BloqueoCancha } from './bloqueo-cancha.entity';
+export { BloqueoJugador } from './bloqueo-jugador.entity';
+export { ConsentimientoDatos } from './consentimiento-datos.entity';
+export { Clase } from './clase.entity';
+export { InscripcionClase } from './inscripcion-clase.entity';
+export { UsuarioPersonal } from './usuario-personal.entity';

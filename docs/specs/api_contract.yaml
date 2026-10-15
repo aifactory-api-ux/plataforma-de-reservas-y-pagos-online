@@ -1,0 +1,1514 @@
+```yaml
+openapi: 3.1.0
+info:
+  title: Sporty API
+  description: Plataforma de Reservas Deportivas
+  version: 1.0.0
+
+servers:
+  - url: http://localhost:23001
+    description: Authentication Service
+  - url: http://localhost:23002
+    description: Reservas Service
+  - url: http://localhost:23003
+    description: Pagos Service
+  - url: http://localhost:23004
+    description: Sedes Service
+  - url: http://localhost:23005
+    description: Clases Service
+  - url: http://localhost:23006
+    description: Admin Service
+  - url: http://localhost:23007
+    description: Health & Metrics
+
+paths:
+  # Authentication Service
+  /auth/google:
+    post:
+      operationId: authGoogle
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - idToken
+              properties:
+                idToken:
+                  type: string
+      responses:
+        '200':
+          description: Google OAuth login/register success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+                  usuario:
+                    $ref: '#/components/schemas/Jugador'
+
+  /auth/refresh:
+    post:
+      operationId: authRefresh
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Token refresh success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  accessToken:
+                    type: string
+                  refreshToken:
+                    type: string
+
+  /auth/logout:
+    post:
+      operationId: authLogout
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - refreshToken
+              properties:
+                refreshToken:
+                  type: string
+      responses:
+        '200':
+          description: Logout success
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /auth/password-reset:
+    post:
+      operationId: authPasswordReset
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - email
+              properties:
+                email:
+                  type: string
+      responses:
+        '200':
+          description: Password reset email sent
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  message:
+                    type: string
+
+  /auth/consent:
+    post:
+      operationId: authConsent
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - version
+                - aceptado
+              properties:
+                version:
+                  type: string
+                aceptado:
+                  type: boolean
+      responses:
+        '200':
+          description: Consent recorded
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  # Reservas Service
+  /reservas:
+    get:
+      operationId: getReservas
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: jugadorId
+          in: query
+          schema:
+            type: integer
+        - name: estado
+          in: query
+          schema:
+            $ref: '#/components/schemas/ReservationStatus'
+        - name: desde
+          in: query
+          schema:
+            type: string
+            format: date-time
+        - name: hasta
+          in: query
+          schema:
+            type: string
+            format: date-time
+      responses:
+        '200':
+          description: List of reservations
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Reserva'
+    post:
+      operationId: createReserva
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - canchaId
+                - tarifaId
+                - inicio
+                - fin
+                - contacto
+              properties:
+                canchaId:
+                  type: integer
+                tarifaId:
+                  type: integer
+                inicio:
+                  type: string
+                  format: date-time
+                fin:
+                  type: string
+                  format: date-time
+                contacto:
+                  type: object
+                  required:
+                    - nombre
+                    - telefono
+                    - email
+                  properties:
+                    nombre:
+                      type: string
+                    telefono:
+                      type: string
+                    email:
+                      type: string
+      responses:
+        '201':
+          description: Reserva created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  reserva:
+                    $ref: '#/components/schemas/Reserva'
+                  retencionMinutos:
+                    type: integer
+
+  /reservas/:id:
+    get:
+      operationId: getReservaById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Reservation details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reserva'
+    put:
+      operationId: updateReserva
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                canchaId:
+                  type: integer
+                tarifaId:
+                  type: integer
+                inicio:
+                  type: string
+                  format: date-time
+                fin:
+                  type: string
+                  format: date-time
+                estado:
+                  $ref: '#/components/schemas/ReservationStatus'
+      responses:
+        '200':
+          description: Reserva updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reserva'
+    delete:
+      operationId: deleteReserva
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Reserva deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /reservas/disponibilidad:
+    get:
+      operationId: getReservasDisponibilidad
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sedeId
+          in: query
+          schema:
+            type: integer
+        - name: deporte
+          in: query
+          schema:
+            type: string
+            enum:
+              - padel
+              - futbol7
+        - name: fecha
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: rangoHorario
+          in: query
+          schema:
+            type: string
+            enum:
+              - manana
+              - tarde
+              - noche
+      responses:
+        '200':
+          description: Availability slots
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    canchaId:
+                      type: integer
+                    hora:
+                      type: string
+                    disponible:
+                      type: boolean
+
+  /reservas/:id/asistio:
+    post:
+      operationId: markReservaAsistio
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Attendance marked
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reserva'
+
+  /:id/asistio:
+    put:
+      operationId: updateAsistio
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Attendance updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Reserva'
+
+  # Pagos Service
+  /pagos/initiate:
+    post:
+      operationId: initiatePago
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - reservaId
+              properties:
+                reservaId:
+                  type: integer
+      responses:
+        '200':
+          description: Payment initiated
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  tokenTransbank:
+                    type: string
+                  urlWebpay:
+                    type: string
+                  reservaId:
+                    type: integer
+
+  /pagos/webpay/callback:
+    post:
+      operationId: webpayCallback
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+                tbkToken:
+                  type: string
+                tbkOrdenCompra:
+                  type: string
+                tbkIdSesion:
+                  type: string
+      responses:
+        '302':
+          description: Redirect to frontend
+
+  /pagos/webpay/notify:
+    post:
+      operationId: webpayNotify
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                token:
+                  type: string
+      responses:
+        '200':
+          description: Notification processed
+
+  /pagos/:id:
+    get:
+      operationId: getPagoById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Pago details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pago'
+
+  /pagos/reserva/:reservaId:
+    get:
+      operationId: getPagoByReservaId
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: reservaId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Pago for reservation
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Pago'
+
+  /pagos/:id/devolver:
+    post:
+      operationId: devolverPago
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - monto
+                - motivo
+              properties:
+                monto:
+                  type: number
+                motivo:
+                  type: string
+      responses:
+        '200':
+          description: Refund processed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  devolucion:
+                    type: object
+                    properties:
+                      id:
+                        type: integer
+                      monto:
+                        type: number
+                      motivo:
+                        type: string
+
+  # Sedes Service
+  /sedes:
+    get:
+      operationId: getSedes
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of sedes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Sede'
+
+  /sedes/:id:
+    get:
+      operationId: getSedeById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Sede details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Sede'
+
+  /sedes/:id/agenda:
+    get:
+      operationId: getSedeAgenda
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: fecha
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Agenda for sede
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  type: object
+                  properties:
+                    hora:
+                      type: string
+                    cancha:
+                      $ref: '#/components/schemas/Cancha'
+                    reserva:
+                      $ref: '#/components/schemas/Reserva'
+
+  /sedes/:id/ocupacion:
+    get:
+      operationId: getSedeOcupacion
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: desde
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          required: true
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Ocupacion report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalHoras:
+                    type: number
+                  horasOcupadas:
+                    type: number
+                  porcentajeOcupacion:
+                    type: number
+                  porCancha:
+                    type: array
+                    items:
+                      type: object
+                      properties:
+                        canchaId:
+                          type: integer
+                        porcentaje:
+                          type: number
+
+  # Clases Service
+  /clases:
+    get:
+      operationId: getClases
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sedeId
+          in: query
+          schema:
+            type: integer
+        - name: profesorId
+          in: query
+          schema:
+            type: integer
+        - name: desde
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: List of classes
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Clase'
+    post:
+      operationId: createClase
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - canchaId
+                - profesorId
+                - inicio
+                - fin
+                - nombre
+                - cupos
+                - precio
+              properties:
+                canchaId:
+                  type: integer
+                profesorId:
+                  type: integer
+                inicio:
+                  type: string
+                  format: date-time
+                fin:
+                  type: string
+                  format: date-time
+                nombre:
+                  type: string
+                cupos:
+                  type: integer
+                precio:
+                  type: number
+      responses:
+        '201':
+          description: Clase created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clase'
+
+  /clases/:id:
+    get:
+      operationId: getClaseById
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Clase details
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clase'
+    put:
+      operationId: updateClase
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                canchaId:
+                  type: integer
+                profesorId:
+                  type: integer
+                inicio:
+                  type: string
+                  format: date-time
+                fin:
+                  type: string
+                  format: date-time
+                nombre:
+                  type: string
+                cupos:
+                  type: integer
+                precio:
+                  type: number
+      responses:
+        '200':
+          description: Clase updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Clase'
+    delete:
+      operationId: deleteClase
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Clase deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /clases/:id/inscribir:
+    post:
+      operationId: inscribirEnClase
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - jugadorId
+              properties:
+                jugadorId:
+                  type: integer
+      responses:
+        '201':
+          description: Jugador inscribed
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/InscripcionClase'
+
+  /clases/:id/inscribir/:jugadorId:
+    delete:
+      operationId: desinscribirDeClase
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+        - name: jugadorId
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Jugador desinscribed
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  # Admin Service
+  /admin/usuarios:
+    get:
+      operationId: getUsuarios
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: rol
+          in: query
+          schema:
+            type: string
+            enum:
+              - encargado
+              - profesor
+              - administrador
+      responses:
+        '200':
+          description: List of usuarios
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/UsuarioPersonal'
+    post:
+      operationId: createUsuario
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - sedeId
+                - nombre
+                - email
+                - password
+                - rol
+              properties:
+                sedeId:
+                  type: integer
+                nombre:
+                  type: string
+                email:
+                  type: string
+                password:
+                  type: string
+                rol:
+                  type: string
+                  enum:
+                    - encargado
+                    - profesor
+                    - administrador
+      responses:
+        '201':
+          description: Usuario created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioPersonal'
+
+  /admin/usuarios/:id:
+    put:
+      operationId: updateUsuario
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                nombre:
+                  type: string
+                email:
+                  type: string
+                rol:
+                  type: string
+                  enum:
+                    - encargado
+                    - profesor
+                    - administrador
+      responses:
+        '200':
+          description: Usuario updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/UsuarioPersonal'
+    delete:
+      operationId: deleteUsuario
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Usuario deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /admin/tarifas:
+    get:
+      operationId: getTarifas
+      security:
+        - BearerAuth: []
+      responses:
+        '200':
+          description: List of tarifas
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Tarifa'
+    post:
+      operationId: createTarifa
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - deporte
+                - duracionMinutos
+                - franja
+                - monto
+              properties:
+                deporte:
+                  type: string
+                  enum:
+                    - padel
+                    - futbol7
+                duracionMinutos:
+                  type: integer
+                franja:
+                  type: string
+                  enum:
+                    - manana
+                    - tarde
+                    - noche
+                monto:
+                  type: number
+      responses:
+        '201':
+          description: Tarifa created
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarifa'
+
+  /admin/tarifas/:id:
+    put:
+      operationId: updateTarifa
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              properties:
+                deporte:
+                  type: string
+                  enum:
+                    - padel
+                    - futbol7
+                duracionMinutos:
+                  type: integer
+                franja:
+                  type: string
+                  enum:
+                    - manana
+                    - tarde
+                    - noche
+                monto:
+                  type: number
+      responses:
+        '200':
+          description: Tarifa updated
+          content:
+            application/json:
+              schema:
+                $ref: '#/components/schemas/Tarifa'
+
+  /admin/bloqueo-jugador:
+    post:
+      operationId: createBloqueoJugador
+      security:
+        - BearerAuth: []
+      requestBody:
+        required: true
+        content:
+          application/json:
+            schema:
+              type: object
+              required:
+                - jugadorId
+                - motivo
+                - inicio
+                - fin
+              properties:
+                jugadorId:
+                  type: integer
+                motivo:
+                  type: string
+                inicio:
+                  type: string
+                  format: date-time
+                fin:
+                  type: string
+                  format: date-time
+      responses:
+        '201':
+          description: Bloqueo created
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  id:
+                    type: integer
+                  jugadorId:
+                    type: integer
+                  motivo:
+                    type: string
+                  inicio:
+                    type: string
+                    format: date-time
+                  fin:
+                    type: string
+                    format: date-time
+
+  /admin/bloqueo-jugador/:id:
+    delete:
+      operationId: deleteBloqueoJugador
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: id
+          in: path
+          required: true
+          schema:
+            type: integer
+      responses:
+        '200':
+          description: Bloqueo deleted
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  success:
+                    type: boolean
+
+  /admin/reportes/reservas:
+    get:
+      operationId: getReportesReservas
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sedeId
+          in: query
+          schema:
+            type: integer
+        - name: desde
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Reservas report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  total:
+                    type: integer
+                  porEstado:
+                    type: object
+                  porDeporte:
+                    type: object
+                  asistencia:
+                    type: object
+
+  /admin/reportes/pagos:
+    get:
+      operationId: getReportesPagos
+      security:
+        - BearerAuth: []
+      parameters:
+        - name: sedeId
+          in: query
+          schema:
+            type: integer
+        - name: desde
+          in: query
+          schema:
+            type: string
+            format: date
+        - name: hasta
+          in: query
+          schema:
+            type: string
+            format: date
+      responses:
+        '200':
+          description: Pagos report
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  totalIngresos:
+                    type: number
+                  cantidadPagos:
+                    type: integer
+                  porEstado:
+                    type: object
+                  devoluciones:
+                    type: object
+
+  # Health & Metrics
+  /health:
+    get:
+      operationId: health
+      responses:
+        '200':
+          description: Health status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  status:
+                    type: string
+                  timestamp:
+                    type: string
+                    format: date-time
+
+  /health/ready:
+    get:
+      operationId: healthReady
+      responses:
+        '200':
+          description: Readiness status
+          content:
+            application/json:
+              schema:
+                type: object
+                properties:
+                  ready:
+                    type: boolean
+                  checks:
+                    type: object
+
+  /metrics:
+    get:
+      operationId: metrics
+      responses:
+        '200':
+          description: Prometheus metrics
+          content:
+            text/plain:
+              schema:
+                type: string
+
+components:
+  securitySchemes:
+    BearerAuth:
+      type: http
+      scheme: bearer
+      bearerFormat: JWT
+
+  schemas:
+    Sede:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        direccion:
+          type: string
+        telefono:
+          type: string
+
+    Cancha:
+      type: object
+      properties:
+        id:
+          type: integer
+        sedeId:
+          type: integer
+        deporte:
+          type: string
+          enum:
+            - padel
+            - futbol7
+        techada:
+          type: boolean
+        estado:
+          type: string
+          enum:
+            - disponible
+            - mantenimiento
+            - bloqueada
+
+    Tarifa:
+      type: object
+      properties:
+        id:
+          type: integer
+        deporte:
+          type: string
+          enum:
+            - padel
+            - futbol7
+        duracionMinutos:
+          type: integer
+        franja:
+          type: string
+          enum:
+            - manana
+            - tarde
+            - noche
+        monto:
+          type: number
+
+    Jugador:
+      type: object
+      properties:
+        id:
+          type: integer
+        nombre:
+          type: string
+        email:
+          type: string
+        telefono:
+          type: string
+        bloqueado:
+          type: boolean
+        inasistencias60Dias:
+          type: integer
+
+    Reserva:
+      type: object
+      properties:
+        id:
+          type: integer
+        jugadorId:
+          type: integer
+        canchaId:
+          type: integer
+        tarifaId:
+          type: integer
+        inicio:
+          type: string
+          format: date-time
+        fin:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          enum:
+            - retenida
+            - pagada
+            - cancelada
+            - asistio
+            - no_asistio
+        creadaEn:
+          type: string
+          format: date-time
+        confirmadaEn:
+          type: string
+          format: date-time
+          nullable: true
+        jugador:
+          $ref: '#/components/schemas/Jugador'
+        cancha:
+          $ref: '#/components/schemas/Cancha'
+        tarifa:
+          $ref: '#/components/schemas/Tarifa'
+        pago:
+          $ref: '#/components/schemas/Pago'
+
+    Pago:
+      type: object
+      properties:
+        id:
+          type: integer
+        reservaId:
+          type: integer
+        montoTotal:
+          type: number
+        estado:
+          type: string
+          enum:
+            - pendiente
+            - completado
+            - fallido
+            - reembolsado
+        tokenTransbank:
+          type: string
+          nullable: true
+        referenciaTransbank:
+          type: string
+          nullable: true
+        pagadoEn:
+          type: string
+          format: date-time
+          nullable: true
+        esParcial:
+          type: boolean
+
+    Clase:
+      type: object
+      properties:
+        id:
+          type: integer
+        canchaId:
+          type: integer
+        profesorId:
+          type: integer
+        inicio:
+          type: string
+          format: date-time
+        fin:
+          type: string
+          format: date-time
+        nombre:
+          type: string
+        cupos:
+          type: integer
+        precio:
+          type: number
+        cancha:
+          $ref: '#/components/schemas/Cancha'
+        profesor:
+          $ref: '#/components/schemas/UsuarioPersonal'
+        inscripciones:
+          type: array
+          items:
+            $ref: '#/components/schemas/InscripcionClase'
+
+    InscripcionClase:
+      type: object
+      properties:
+        id:
+          type: integer
+        claseId:
+          type: integer
+        jugadorId:
+          type: integer
+        inscritaEn:
+          type: string
+          format: date-time
+        estado:
+          type: string
+          enum:
+            - activa
+            - cancelada
+
+    UsuarioPersonal:
+      type: object
+      properties:
+        id:
+          type: integer
+        sedeId:
+          type: integer
+        nombre:
+          type: string
+        email:
+          type: string
+        rol:
+          type: string
+          enum:
+            - encargado
+            - profesor
+            - administrador
+
+    ReservationStatus:
+      type: string
+      enum:
+        - retenida
+        - pagada
+        - cancelada
+        - asistio
+        - no_asistio
+```

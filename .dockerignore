@@ -1,0 +1,42 @@
+# Git
+.git
+.gitignore
+
+# Dependencies
+node_modules
+bower_components
+
+# Build outputs
+dist
+build
+.next
+out
+
+# Logs
+logs
+*.log
+
+# Environment files
+.env
+.env.*
+.env.local
+
+# IDE
+.idea
+.vscode
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# Documentation
+*.md
+!README.md
+
+# Temporary
+*.tmp
+*.temp
+.cache
+__pycache__
