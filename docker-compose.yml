@@ -3,7 +3,7 @@ version: '3.8'
 services:
   postgres:
     image: postgres:15-alpine
-    container_name: sporty_postgres
+
     environment:
       POSTGRES_USER: ${DB_USERNAME:-sporty}
       POSTGRES_PASSWORD: ${DB_PASSWORD:-sporty_secret}
@@ -26,7 +26,7 @@ services:
     build:
       context: ./backend/auth-service
       dockerfile: Dockerfile
-    container_name: sporty_auth_service
+
     environment:
       NODE_ENV: production
       DB_HOST: postgres
@@ -60,7 +60,7 @@ services:
     build:
       context: ./backend/reservas-service
       dockerfile: Dockerfile
-    container_name: sporty_reservas_service
+
     environment:
       NODE_ENV: production
       DB_HOST: postgres
@@ -91,7 +91,7 @@ services:
     build:
       context: ./backend/pagos-service
       dockerfile: Dockerfile
-    container_name: sporty_pagos_service
+
     environment:
       NODE_ENV: production
       DB_HOST: postgres
@@ -129,7 +129,7 @@ services:
     build:
       context: ./backend/sedes-service
       dockerfile: Dockerfile
-    container_name: sporty_sedes_service
+
     environment:
       NODE_ENV: production
       DB_HOST: postgres
@@ -160,7 +160,7 @@ services:
     build:
       context: ./backend/clases-service
       dockerfile: Dockerfile
-    container_name: sporty_clases_service
+
     environment:
       NODE_ENV: production
       DB_HOST: postgres
@@ -191,7 +191,7 @@ services:
     build:
       context: ./backend/admin-service
       dockerfile: Dockerfile
-    container_name: sporty_admin_service
+
     environment:
       NODE_ENV: production
       DB_HOST: postgres
@@ -222,7 +222,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
-    container_name: sporty_frontend
+
     ports:
       - "23007:80"
     depends_on:
